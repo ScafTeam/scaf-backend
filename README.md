@@ -3,6 +3,8 @@
 ## 開發方式
 
 ```bash
+go mod init backend
+go mod tidy
 go run .
 ```
 
