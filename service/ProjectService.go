@@ -93,7 +93,6 @@ func CreateProject(c *gin.Context) {
 		Doc("all_projects/"+User.Email+"/projects/"+project_uuid).
 		Set(database.Ctx, project)
 	if err != nil {
-		// Handle any errors in an appropriate way, such as returning them.
 		log.Printf("An error has occurred: %s", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": err,
@@ -111,11 +110,10 @@ func AddRepo(c *gin.Context) {
 		})
 		return
 	}
-	id := c.Param("id")
 	log.Println("add repo")
 	req := make(map[string]interface{})
 	c.BindJSON(&req)
-	log.Println(req)
+	id := req["project_id"].(string)
 
 	repo := model.Repo{
 		Name: req["Name"].(string),
@@ -127,7 +125,6 @@ func AddRepo(c *gin.Context) {
 		Get(database.Ctx)
 
 	if err != nil {
-		// Handle any errors in an appropriate way, such as returning them.
 		log.Printf("An error has occurred: %s", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": err,
@@ -157,7 +154,6 @@ func AddRepo(c *gin.Context) {
 		Delete(database.Ctx)
 
 	if err != nil {
-		// Handle any errors in an appropriate way, such as returning them.
 		log.Printf("An error has occurred: %s", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": err,
@@ -174,7 +170,6 @@ func AddRepo(c *gin.Context) {
 		})
 	}
 
-	// Convert struct
 	var mapData map[string]interface{}
 	if err := json.Unmarshal(jsonStr, &mapData); err != nil {
 		log.Println(err)
@@ -196,7 +191,60 @@ func AddRepo(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "add repo",
 	})
-	// _, err := database.Client.
-	// 	Doc("all_projects/" + User.Email + "/projects/" + id).
-	// 	Set(database.Ctx)
+}
+
+func DeleteProject(c *gin.Context) {
+	if User.Email == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"message": "unauthorized",
+		})
+		return
+	}
+
+	req := make(map[string]interface{})
+	c.BindJSON(&req)
+
+	log.Println("delete project")
+	_, err := database.Client.
+		Doc("all_projects/" + User.Email + "/projects/" + req["project_id"].(string)).
+		Delete(database.Ctx)
+	if err != nil {
+		log.Printf("An error has occurred: %s", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": err,
+		})
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"message": "project deleted",
+	})
+}
+
+func ListAllRepos(c *gin.Context) {
+	if User.Email == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"message": "unauthorized",
+		})
+		return
+	}
+	log.Println("list all repos")
+
+	req := make(map[string]interface{})
+	c.BindJSON(&req)
+
+	dsnap, err := database.Client.
+		Doc("all_projects/" + User.Email + "/projects/" + req["project_id"].(string)).
+		Get(database.Ctx)
+
+	if err != nil {
+		log.Printf("An error has occurred: %s", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": err,
+		})
+	}
+
+	repos := dsnap.Data()["Repos"].([]interface{})
+
+	c.JSON(http.StatusOK, gin.H{
+		"repos": repos,
+	})
 }

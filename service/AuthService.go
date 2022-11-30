@@ -64,7 +64,7 @@ func UserForgotPassword(c *gin.Context) {
 			"message": "Password reset email sent",
 		})
 	} else {
-	// EMAIL_NOT_FOUND 沒有此用戶
+		// EMAIL_NOT_FOUND 沒有此用戶
 		log.Println(res.ErrorMessage())
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status":  "eamil not found",

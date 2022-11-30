@@ -12,9 +12,8 @@ func AddAuthRouter(auth_router *gin.RouterGroup) {
 }
 
 func AddProjectRouter(project_router *gin.RouterGroup) {
-	project_router.GET("/list", service.ListAllProjects)
-	project_router.POST("/create", service.CreateProject)
-	project_router.POST("/:id/addRepo", service.AddRepo)
-	project_router.POST("/:id/delete", service.AddRepo)
-	project_router.POST("/:id/deleteRepo", service.AddRepo)
+	project_router.GET("/repos", service.ListAllRepos)
+	project_router.POST("/repos", service.AddRepo)
+	project_router.POST("/", service.CreateProject)
+	project_router.DELETE("/", service.DeleteProject)
 }
