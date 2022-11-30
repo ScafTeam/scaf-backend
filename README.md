@@ -13,8 +13,8 @@ signin: ```/auth/signin```<br>
 Data:
 ```json
 {
-    email: "email",
-    password: "password"
+    "email": "email",
+    "password": "password"
 }
 ```
 
@@ -22,8 +22,8 @@ signup: ```/auth/signup```<br>
 Data:
 ```json
 {
-    email: "email",
-    password: "password"
+    "email": "email",
+    "password": "password"
 }
 ```
 
