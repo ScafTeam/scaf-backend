@@ -8,6 +8,7 @@ import (
 func AddAuthRouter(auth_router *gin.RouterGroup) {
 	auth_router.POST("/signin", service.UserLogin)
 	auth_router.POST("/signup", service.UserRegister)
+	auth_router.POST("/forgot", service.UserForgotPassword)
 }
 
 func AddProjectRouter(project_router *gin.RouterGroup) {

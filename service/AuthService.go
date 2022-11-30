@@ -51,3 +51,24 @@ func UserRegister(c *gin.Context) {
 		})
 	}
 }
+
+func UserForgotPassword(c *gin.Context) {
+	json := make(map[string]interface{})
+	c.BindJSON(&json)
+	res := auth.ForgotPassword(json["email"].(string))
+	if res.Status() {
+		log.Println("Email is sent")
+		log.Println(res)
+		c.JSON(http.StatusOK, gin.H{
+			"status":  "OK",
+			"message": "Password reset email sent",
+		})
+	} else {
+	// EMAIL_NOT_FOUND 沒有此用戶
+		log.Println(res.ErrorMessage())
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  "eamil not found",
+			"message": res.ErrorMessage(),
+		})
+	}
+}
