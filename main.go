@@ -16,8 +16,8 @@ func main() {
 
 	auth_router := server.Group("/auth")
 	// router.AddAuthRouter(auth_router)
-	auth_router.POST("/login", service.UserLogin)
-	auth_router.POST("/register", service.UserRegister)
+	auth_router.POST("/signin", service.UserLogin)
+	auth_router.POST("/signup", service.UserRegister)
 
 	project_router := server.Group("/projects")
 	// router.AddProjectRouter(project_router)

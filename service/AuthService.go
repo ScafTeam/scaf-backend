@@ -17,16 +17,16 @@ func UserLogin(c *gin.Context) {
 	res := auth.SignInWithEmailAndPassword(json["email"].(string), json["password"].(string))
 	if res.Status() {
 		User = res.Result()
-		log.Println(User.Email + " is login")
+		log.Println(User.Email + " is signed in")
 		c.JSON(http.StatusOK, gin.H{
-			"status":  "active",
-			"message": "login success",
+			"status":  "authorized",
+			"message": "Sign in success",
 		})
 	} else {
 		log.Println(res.ErrorMessage())
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"status":  "active",
-			"message": "login success",
+			"status":  "unauthorized",
+			"message": res.ErrorMessage(),
 		})
 	}
 }
@@ -39,7 +39,15 @@ func UserRegister(c *gin.Context) {
 	if res.Status() {
 		user := res.Result()
 		log.Println(user.Email + " is signed up")
+		c.JSON(http.StatusOK, gin.H{
+			"status":  "authorized",
+			"message": "Sign in success",
+		})
 	} else {
 		log.Println(res.ErrorMessage())
+		c.JSON(http.StatusOK, gin.H{
+			"status":  "unauthorized",
+			"message": "Sign in success",
+		})
 	}
 }
