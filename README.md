@@ -9,7 +9,8 @@ go run .
 ```
 
 ### api
-signin: ```/auth/signin```<br>
+signin: ```/signin```<br>
+method: POST
 Data:
 ```json
 {
@@ -18,7 +19,8 @@ Data:
 }
 ```
 
-signup: ```/auth/signup```<br>
+signup: ```/signup```<br>
+method: POST<br>
 Data:
 ```json
 {
@@ -27,9 +29,11 @@ Data:
 }
 ```
 
-list all projects: ```/projects/list```
+list all projects: ```/projects```
+method: GET<br>
 
-create project: ```/projects/create```<br>
+create project: ```/project```<br>
+method: POST<br>
 Data:
 ```json
 {
@@ -39,7 +43,8 @@ Data:
 }
 ```
 
-add repo: ```/projects/:id/addRepo```<br>
+add repo: ```/projects/repos```<br>
+method: POST<br>
 Data:
 ```json
 {
