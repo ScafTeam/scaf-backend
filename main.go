@@ -2,8 +2,7 @@ package main
 
 import (
 	"backend/database"
-	// "backend/router"
-	"backend/service"
+	"backend/router"
 	"github.com/ScafTeam/firebase-go-client/auth"
 	"github.com/gin-gonic/gin"
 	// "log"
@@ -15,15 +14,10 @@ func main() {
 	database.SetupFirebase()
 
 	auth_router := server.Group("/auth")
-	// router.AddAuthRouter(auth_router)
-	auth_router.POST("/signin", service.UserLogin)
-	auth_router.POST("/signup", service.UserRegister)
+	router.AddAuthRouter(auth_router)
 
 	project_router := server.Group("/projects")
-	// router.AddProjectRouter(project_router)
-	project_router.GET("/list", service.ListAllProjects)
-	project_router.POST("/create", service.CreateProject)
-	project_router.POST("/:id/addRepo", service.AddRepo)
+	router.AddProjectRouter(project_router)
 
 	server.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{

@@ -45,9 +45,9 @@ func UserRegister(c *gin.Context) {
 		})
 	} else {
 		log.Println(res.ErrorMessage())
-		c.JSON(http.StatusOK, gin.H{
+		c.JSON(http.StatusUnauthorized, gin.H{
 			"status":  "unauthorized",
-			"message": "Sign in success",
+			"message": res.ErrorMessage(),
 		})
 	}
 }
