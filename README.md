@@ -8,11 +8,33 @@ go mod tidy
 go run .
 ```
 
-api
+### api
 signin ```/auth/signin```
+    Data:
+        ```json
+        {
+            email: "email",
+            password: "password"
+        }
+        ```
 signup ```/auth/signup```
+    Data:
+        ```json
+        {
+            email: "email",
+            password: "password"
+        }
+        ```
 list all projects ```/projects/list```
 create project ```/projects/create```
+    Data:
+        ```json
+        {
+            "Name": "test",
+            "DevTools": [],
+            "DevMode": "waterfall"
+        }
+        ```
 
 ### firebase
 
