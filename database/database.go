@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"cloud.google.com/go/firestore"
@@ -10,32 +9,22 @@ import (
 	"google.golang.org/api/option"
 )
 
-var client *firestore.Client
+var Client *firestore.Client
 
 // Use a service account
-var ctx = context.Background()
+var Ctx = context.Background()
 
 func SetupFirebase() {
 	opt := option.WithCredentialsFile("database/serviceAccount.json")
-	config := &firebase.Config{ProjectID: "ProjectID"}
-	app, err := firebase.NewApp(ctx, config, opt)
+	config := &firebase.Config{ProjectID: "test-e7825"}
+	app, err := firebase.NewApp(Ctx, config, opt)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	client, err = app.Firestore(ctx)
+	Client, err = app.Firestore(Ctx)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	defer client.Close()
-}
-
-func GetData(collection string, doc string) (map[string]interface{}, error) {
-	dsnap, err := client.Collection(collection).Doc(doc).Get(ctx)
-	if err != nil {
-		log.Fatalln(err)
-		return nil, err
-	}
-	fmt.Println(dsnap.Data())
-	return dsnap.Data(), nil
+	// defer Client.Close()
 }

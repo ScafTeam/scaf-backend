@@ -5,8 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func AddAuthRouter(r *gin.RouterGroup) {
-	auth_router := r.Group("/")
+func AddAuthRouter(auth_router *gin.RouterGroup) {
 	auth_router.POST("/login", service.UserLogin)
 	auth_router.POST("/register", service.UserRegister)
 }

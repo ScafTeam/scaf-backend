@@ -2,19 +2,27 @@ package main
 
 import (
 	"backend/database"
-	"backend/router"
+	// "backend/router"
+	"backend/service"
 	"github.com/ScafTeam/firebase-go-client/auth"
 	"github.com/gin-gonic/gin"
+	// "log"
 )
 
 func main() {
 	server := gin.Default()
-	auth.Auth("firebase ID token")
+	auth.Auth("AIzaSyAvQMZVhXbBZ61DdypPJG-zsg0NHnqKEBQ")
 	database.SetupFirebase()
 
 	auth_router := server.Group("/auth")
+	// router.AddAuthRouter(auth_router)
+	auth_router.POST("/login", service.UserLogin)
+	auth_router.POST("/register", service.UserRegister)
 
-	router.AddAuthRouter(auth_router)
+	project_router := server.Group("/projects")
+	// router.AddProjectRouter(project_router)
+	project_router.GET("/list", service.ListAllProjects)
+	project_router.POST("/create", service.CreateProject)
 
 	server.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{
