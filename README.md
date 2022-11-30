@@ -27,7 +27,7 @@ Data:
 }
 ```
 
-list all projects ```/projects/list```
+list all projects: ```/projects/list```
 
 create project: ```/projects/create```<br>
 Data:
@@ -36,6 +36,15 @@ Data:
     "Name": "test",
     "DevTools": [],
     "DevMode": "waterfall"
+}
+```
+
+add repo: ```/projects/:id/addRepo```<br>
+Data:
+```json
+{
+    "Name": "RepoName",
+    "Url": "RepoUrl"
 }
 ```
 

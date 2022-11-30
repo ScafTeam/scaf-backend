@@ -23,6 +23,7 @@ func main() {
 	// router.AddProjectRouter(project_router)
 	project_router.GET("/list", service.ListAllProjects)
 	project_router.POST("/create", service.CreateProject)
+	project_router.POST("/:id/addRepo", service.AddRepo)
 
 	server.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{
