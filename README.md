@@ -8,6 +8,12 @@ go mod tidy
 go run .
 ```
 
+api
+signin ```/auth/signin```
+signup ```/auth/signup```
+list all projects ```/projects/list```
+create project ```/projects/create```
+
 ### firebase
 
 測試帳號: test@test.com / abstest1
