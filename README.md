@@ -8,7 +8,7 @@ go mod tidy
 go run .
 ```
 
-### api
+### api (need jwt)
 signin: ```/signin```<br>
 method: POST
 Data:
@@ -29,10 +29,7 @@ Data:
 }
 ```
 
-list all projects: ```/projects```
-method: GET<br>
-
-create project: ```/project```<br>
+create project: ```user/{user_email}```<br>
 method: POST<br>
 Data:
 ```json
@@ -43,7 +40,7 @@ Data:
 }
 ```
 
-add repo: ```/projects/repos```<br>
+<!-- add repo: ```/projects/repos```<br>
 method: POST<br>
 Data:
 ```json
@@ -51,15 +48,15 @@ Data:
     "Name": "RepoName",
     "Url": "RepoUrl"
 }
-```
+``` -->
 
 ### firebase
 
-測試帳號: test@test.com / abstest1
+測試帳號: test@test.com / test
 
 ## TODO List
 
 - [x] 登入
 - [X] 註冊 
-- [ ] 登出
-- [ ] 忘記密碼# scaf-backend
+- [X] 登出
+- [X] 忘記密碼# scaf-backend
