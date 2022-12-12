@@ -13,6 +13,7 @@ import (
 func main() {
 	server := gin.Default()
 	auth.Auth("AIzaSyAvQMZVhXbBZ61DdypPJG-zsg0NHnqKEBQ")
+
 	database.SetupFirebase()
 
 	auth_router := server.Group("/")
