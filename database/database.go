@@ -12,17 +12,17 @@ import (
 var Client *firestore.Client
 
 // Use a service account
-var Ctx = context.Background()
 
 func SetupFirebase() {
+	ctx := context.Background()
 	opt := option.WithCredentialsFile("database/serviceAccount.json")
 	config := &firebase.Config{ProjectID: "test-e7825"}
-	app, err := firebase.NewApp(Ctx, config, opt)
+	app, err := firebase.NewApp(ctx, config, opt)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	Client, err = app.Firestore(Ctx)
+	Client, err = app.Firestore(ctx)
 	if err != nil {
 		log.Fatalln(err)
 	}
