@@ -2,7 +2,9 @@ package service
 
 import (
 	"backend/database"
+	"backend/middleware"
 	"backend/model"
+	"context"
 	"net/http"
 
 	"encoding/json"
@@ -11,21 +13,20 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
+	"github.com/lithammer/shortuuid"
 	"google.golang.org/api/iterator"
 )
 
-var Projects []interface{}
-
 func ListAllProjects(c *gin.Context) {
-	if User.Email == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"message": "unauthorized",
-		})
-		return
-	}
+	// claims := jwt.ExtractClaims(c)
+	user, _ := c.Get(middleware.IdentityKey)
+	userEmail := user.(*model.ScafUser).Email
 	log.Println("get all projects")
-	iter := database.Client.Collection("all_projects").Doc(User.Email).Collection("projects").Documents(database.Ctx)
+	iter := database.Client.Collection("all_project").
+		Doc(userEmail).
+		Collection("projects").
+		Documents(context.Background())
+	projects := make([]model.Project, 0)
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
@@ -55,26 +56,22 @@ func ListAllProjects(c *gin.Context) {
 			})
 			return
 		}
-		Projects = append(Projects, project)
+		projects = append(projects, project)
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"projects": Projects,
+		"projects": projects,
 	})
 }
 
 func CreateProject(c *gin.Context) {
-	if User.Email == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"message": "unauthorized",
-		})
-		return
-	}
 	log.Println("create project")
+	user, _ := c.Get(middleware.IdentityKey)
+	userEmail := user.(*model.ScafUser).Email
 	req := make(map[string]interface{})
 	c.BindJSON(&req)
 	log.Println(req)
 
-	project_uuid := uuid.New().String()
+	project_uuid := shortuuid.New()
 	// repo_uuid := uuid.New().String()
 	project_create_on := time.Now().Format(time.RFC850)
 
@@ -82,7 +79,7 @@ func CreateProject(c *gin.Context) {
 		"Id":       project_uuid,
 		"Name":     req["Name"],
 		"CreateOn": project_create_on,
-		"Author":   User.Email,
+		"Author":   userEmail,
 		"Members":  []string{},
 		"Repos":    []model.Repo{},
 		"DevTools": req["DevTools"],
@@ -90,8 +87,8 @@ func CreateProject(c *gin.Context) {
 	}
 
 	_, err := database.Client.
-		Doc("all_projects/"+User.Email+"/projects/"+project_uuid).
-		Set(database.Ctx, project)
+		Doc("all_projects/"+userEmail+"/projects/"+project_uuid).
+		Set(context.Background(), project)
 	if err != nil {
 		log.Printf("An error has occurred: %s", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -104,13 +101,9 @@ func CreateProject(c *gin.Context) {
 }
 
 func AddRepo(c *gin.Context) {
-	if User.Email == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"message": "unauthorized",
-		})
-		return
-	}
 	log.Println("add repo")
+	user, _ := c.Get(middleware.IdentityKey)
+	userEmail := user.(*model.ScafUser).Email
 	req := make(map[string]interface{})
 	c.BindJSON(&req)
 	id := req["project_id"].(string)
@@ -121,8 +114,8 @@ func AddRepo(c *gin.Context) {
 	}
 
 	dsnap, err := database.Client.
-		Doc("all_projects/" + User.Email + "/projects/" + id).
-		Get(database.Ctx)
+		Doc("all_projects/" + userEmail + "/projects/" + id).
+		Get(context.Background())
 
 	if err != nil {
 		log.Printf("An error has occurred: %s", err)
@@ -150,8 +143,8 @@ func AddRepo(c *gin.Context) {
 	}
 
 	_, err = database.Client.
-		Doc("all_projects/" + User.Email + "/projects/" + id).
-		Delete(database.Ctx)
+		Doc("all_projects/" + userEmail + "/projects/" + id).
+		Delete(context.Background())
 
 	if err != nil {
 		log.Printf("An error has occurred: %s", err)
@@ -179,8 +172,8 @@ func AddRepo(c *gin.Context) {
 	}
 
 	_, err = database.Client.
-		Doc("all_projects/"+User.Email+"/projects/"+id).
-		Set(database.Ctx, mapData)
+		Doc("all_projects/"+userEmail+"/projects/"+id).
+		Set(context.Background(), mapData)
 
 	if err != nil {
 		log.Printf("An error has occurred: %s", err)
@@ -194,20 +187,15 @@ func AddRepo(c *gin.Context) {
 }
 
 func DeleteProject(c *gin.Context) {
-	if User.Email == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"message": "unauthorized",
-		})
-		return
-	}
-
+	user, _ := c.Get(middleware.IdentityKey)
+	userEmail := user.(*model.ScafUser).Email
 	req := make(map[string]interface{})
 	c.BindJSON(&req)
 
 	log.Println("delete project")
 	_, err := database.Client.
-		Doc("all_projects/" + User.Email + "/projects/" + req["project_id"].(string)).
-		Delete(database.Ctx)
+		Doc("all_projects/" + userEmail + "/projects/" + req["project_id"].(string)).
+		Delete(context.Background())
 	if err != nil {
 		log.Printf("An error has occurred: %s", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -220,20 +208,16 @@ func DeleteProject(c *gin.Context) {
 }
 
 func ListAllRepos(c *gin.Context) {
-	if User.Email == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"message": "unauthorized",
-		})
-		return
-	}
+	user, _ := c.Get(middleware.IdentityKey)
+	userEmail := user.(*model.ScafUser).Email
 	log.Println("list all repos")
 
 	req := make(map[string]interface{})
 	c.BindJSON(&req)
 
 	dsnap, err := database.Client.
-		Doc("all_projects/" + User.Email + "/projects/" + req["project_id"].(string)).
-		Get(database.Ctx)
+		Doc("all_projects/" + userEmail + "/projects/" + req["project_id"].(string)).
+		Get(context.Background())
 
 	if err != nil {
 		log.Printf("An error has occurred: %s", err)
