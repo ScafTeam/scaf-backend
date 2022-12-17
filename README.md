@@ -10,7 +10,7 @@ go run .
 
 ### api (need jwt)
 1. **signin:** ```/signin```<br>
-method: POST
+method: POST<br>
 Data:
 ```json
 {
@@ -52,6 +52,7 @@ Data:
     "Url": "RepoUrl"
 }
 ```
+
 ### firebase
 
 測試帳號: test@test.com / testtest
