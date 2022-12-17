@@ -25,6 +25,7 @@ func SetupAuthMiddleware(server *gin.Engine) {
 		Timeout:          time.Hour,
 		MaxRefresh:       time.Hour,   //刷新最大延长时间
 		IdentityKey:      IdentityKey, //指定cookie的id
+		SendCookie:       true,
 		PayloadFunc: func(data interface{}) jwt.MapClaims { //负载，这里可以定义返回jwt中的payload数据
 			v, ok := data.(*model.ScafUser)
 			// log.Println(data.(*model.ScafUser))
