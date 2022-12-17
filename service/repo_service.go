@@ -6,10 +6,9 @@ import (
 	"context"
 	"net/http"
 
-	"encoding/json"
-
 	"log"
 
+	"cloud.google.com/go/firestore"
 	"github.com/gin-gonic/gin"
 )
 
@@ -24,59 +23,17 @@ func AddRepo(c *gin.Context) {
 		Url:  req["Url"].(string),
 	}
 
-	dsnap, err := database.Client.
-		Doc("projects/" + project_id).
-		Get(context.Background())
-
+	_, err := database.Client.
+		Collection("projects").
+		Doc(project_id).
+		Update(context.Background(), []firestore.Update{
+			{
+				Path:  "Repos",
+				Value: firestore.ArrayUnion(repo),
+			},
+		})
 	if err != nil {
-		log.Printf("An get project error has occurred: %s", err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": err,
-		})
-	}
-
-	jsonStr, err := json.Marshal(dsnap.Data())
-	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": err,
-		})
-		return
-	}
-
-	var project model.Project
-	if err := json.Unmarshal(jsonStr, &project); err != nil {
-		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": err,
-		})
-		return
-	}
-
-	project.Repos = append(project.Repos, repo)
-
-	jsonStr, err = json.Marshal(project)
-	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": err,
-		})
-	}
-
-	var mapData map[string]interface{}
-	if err := json.Unmarshal(jsonStr, &mapData); err != nil {
-		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": err,
-		})
-	}
-
-	_, err = database.Client.
-		Doc("projects/"+project_id).
-		Set(context.Background(), mapData)
-
-	if err != nil {
-		log.Printf("An add project error has occurred: %s", err)
+		log.Printf("An error has occurred: %s", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": err,
 		})

@@ -20,6 +20,10 @@ func AddAuthRouter(auth_router *gin.RouterGroup) {
 
 func AddProjectRouter(project_router *gin.RouterGroup) {
 	project_router.GET("/", service.ListAllProjects)
+	project_router.Use(middleware.AuthMiddleware.MiddlewareFunc())
+	{
+		project_router.POST("/:project_id/join", service.AddMember)
+	}
 	project_router.Use(middleware.AuthCheck())
 	{
 		project_router.DELETE("/:project_id", service.DeleteProject)

@@ -13,6 +13,7 @@ import (
 	"time"
 
 	// "github.com/ScafTeam/firebase-go-client/auth"
+	"cloud.google.com/go/firestore"
 	"github.com/gin-gonic/gin"
 	"github.com/lithammer/shortuuid"
 	"google.golang.org/api/iterator"
@@ -132,5 +133,39 @@ func DeleteProject(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"message": "project deleted",
+	})
+}
+
+func AddMember(c *gin.Context) {
+	project_id := c.Param("project_id")
+	claims, err := middleware.AuthMiddleware.GetClaimsFromJWT(c)
+
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+
+	userEmail := claims[middleware.IdentityKey].(string)
+
+	_, err = database.Client.
+		Collection("projects").
+		Doc(project_id).
+		Update(context.Background(), []firestore.Update{
+			{
+				Path:  "Members",
+				Value: firestore.ArrayUnion(userEmail),
+			},
+		})
+	if err != nil {
+		log.Printf("An error has occurred: %s", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": err,
+		})
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"message": "member added",
 	})
 }
