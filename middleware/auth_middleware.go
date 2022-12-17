@@ -1,7 +1,9 @@
 package middleware
 
 import (
+	"backend/database"
 	"backend/model"
+	"context"
 	"log"
 	"net/http"
 	"time"
@@ -74,25 +76,31 @@ func SetupAuthMiddleware(server *gin.Engine) {
 
 func MemberCheck() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// 	token, err := AuthMiddleware.ParseToken(c)
-		// 	if err != nil {
-		// 		c.JSON(http.StatusUnauthorized, gin.H{
-		// 			"status":  "Internal Server Error",
-		// 			"message": "Internal Server Error",
-		// 		})
-		// 		c.Abort()
-		// 	}
-		// 	claims := jwt.ExtractClaimsFromToken(token)
-		// 	email := claims[IdentityKey].(string)
-		// 	project_id := c.Param("project_id")
-		// 	if email != url_email {
-		// 		c.JSON(http.StatusUnauthorized, gin.H{
-		// 			"status":  "unauthorized",
-		// 			"message": "Unauthorized",
-		// 		})
-		// 		c.Abort()
-		// 	}
-		// 	c.Next()
+		token, err := AuthMiddleware.ParseToken(c)
+		claims := jwt.ExtractClaimsFromToken(token)
+		email := claims[IdentityKey].(string)
+		project_id := c.Param("project_id")
+		// log.Println(project_id)
+		dsnap, err := database.Client.Collection("projects").
+			Doc(project_id).Get(context.Background())
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"status":  "Internal Server Error",
+				"message": err.Error(),
+			})
+		}
+		m := dsnap.Data()["Members"].([]interface{})
+		for _, member := range m {
+			if member.(string) == email {
+				c.Next()
+				return
+			}
+		}
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"status":  "unauthorized",
+			"message": "Unauthorized",
+		})
+		c.Abort()
 	}
 }
 

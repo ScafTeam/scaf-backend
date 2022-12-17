@@ -24,8 +24,8 @@ func main() {
 	project_router := server.Group("/:user_email/project")
 	router.AddProjectRouter(project_router)
 
-	// repo_router := project_router.Group("/:project_id/repo")
-	// router.AddRepoRouter(repo_router)
+	repo_router := project_router.Group("/:project_id/repo")
+	router.AddRepoRouter(repo_router)
 
 	server.GET("/projects", service.ListAllProjects)
 	server.GET("/", func(c *gin.Context) {
