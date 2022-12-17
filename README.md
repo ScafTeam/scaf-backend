@@ -9,7 +9,7 @@ go run .
 ```
 
 ### api (need jwt)
-signin: ```/signin```<br>
+1. **signin:** ```/signin```<br>
 method: POST
 Data:
 ```json
@@ -18,8 +18,7 @@ Data:
     "password": "password"
 }
 ```
-
-signup: ```/signup```<br>
+2. **signup:** ```/signup```<br>
 method: POST<br>
 Data:
 ```json
@@ -28,8 +27,9 @@ Data:
     "password": "password"
 }
 ```
-
-create project: ```user/{user_email}```<br>
+3. **list user's project:** ```{user_email}/project```<br>
+method: GET<br>
+4. **create project:** ```{user_email}/project```<br>
 method: POST<br>
 Data:
 ```json
@@ -39,8 +39,11 @@ Data:
     "DevMode": "waterfall"
 }
 ```
-
-<!-- add repo: ```/projects/repos```<br>
+5. **Delete project:** ```{uesr_email}/project/{project_id}```<br>
+method: POST<br>
+6. **list all repos:**```{uesr_email}/project/{project_id}/repo```<br>
+method: GET<br>
+7. **add repo:**```{uesr_email}/project/{project_id}/repo```<br>
 method: POST<br>
 Data:
 ```json
@@ -48,11 +51,10 @@ Data:
     "Name": "RepoName",
     "Url": "RepoUrl"
 }
-``` -->
-
+```
 ### firebase
 
-測試帳號: test@test.com / test
+測試帳號: test@test.com / testtest
 
 ## TODO List
 
