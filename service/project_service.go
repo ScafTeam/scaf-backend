@@ -12,19 +12,27 @@ import (
 	"log"
 	"time"
 
+	// "github.com/ScafTeam/firebase-go-client/auth"
 	"github.com/gin-gonic/gin"
 	"github.com/lithammer/shortuuid"
 	"google.golang.org/api/iterator"
 )
 
 func ListAllProjects(c *gin.Context) {
-	// claims := jwt.ExtractClaims(c)
-	user, _ := c.Get(middleware.IdentityKey)
-	userEmail := user.(*model.ScafUser).Email
-	log.Println("get all projects")
-	iter := database.Client.Collection("all_project").
-		Doc(userEmail).
-		Collection("projects").
+	claims, err := middleware.AuthMiddleware.GetClaimsFromJWT(c)
+
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+
+	userEmail := claims[middleware.IdentityKey].(string)
+	log.Println("get projects")
+	iter := database.Client.Collection("projects").
+		Where("Members", "array-contains", userEmail).
 		Documents(context.Background())
 	projects := make([]model.Project, 0)
 	for {
@@ -65,8 +73,17 @@ func ListAllProjects(c *gin.Context) {
 
 func CreateProject(c *gin.Context) {
 	log.Println("create project")
-	user, _ := c.Get(middleware.IdentityKey)
-	userEmail := user.(*model.ScafUser).Email
+	claims, err := middleware.AuthMiddleware.GetClaimsFromJWT(c)
+
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+
+	userEmail := claims[middleware.IdentityKey].(string)
 	req := make(map[string]interface{})
 	c.BindJSON(&req)
 	log.Println(req)
@@ -74,25 +91,24 @@ func CreateProject(c *gin.Context) {
 	project_uuid := shortuuid.New()
 	// repo_uuid := uuid.New().String()
 	project_create_on := time.Now().Format(time.RFC850)
-
 	project := map[string]interface{}{
 		"Id":       project_uuid,
 		"Name":     req["Name"],
 		"CreateOn": project_create_on,
 		"Author":   userEmail,
-		"Members":  []string{},
+		"Members":  []string{userEmail},
 		"Repos":    []model.Repo{},
 		"DevTools": req["DevTools"],
 		"DevMode":  req["DevMode"],
 	}
 
-	_, err := database.Client.
-		Doc("all_projects/"+userEmail+"/projects/"+project_uuid).
+	_, err = database.Client.
+		Doc("projects/"+project_uuid).
 		Set(context.Background(), project)
 	if err != nil {
 		log.Printf("An error has occurred: %s", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": err,
+			"message": err.Error(),
 		})
 	}
 	c.JSON(http.StatusCreated, gin.H{
@@ -187,14 +203,12 @@ func AddRepo(c *gin.Context) {
 }
 
 func DeleteProject(c *gin.Context) {
-	user, _ := c.Get(middleware.IdentityKey)
-	userEmail := user.(*model.ScafUser).Email
-	req := make(map[string]interface{})
-	c.BindJSON(&req)
 
+	project_id := c.Param("project_id")
 	log.Println("delete project")
 	_, err := database.Client.
-		Doc("all_projects/" + userEmail + "/projects/" + req["project_id"].(string)).
+		Collection("projects").
+		Doc(project_id).
 		Delete(context.Background())
 	if err != nil {
 		log.Printf("An error has occurred: %s", err)

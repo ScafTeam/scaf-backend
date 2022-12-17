@@ -20,8 +20,8 @@ func UserRegister(c *gin.Context) {
 	if res.Status() {
 		user := res.Result()
 		scaf_user := model.ScafUser{
-			User:     user,
-			Projects: []model.Project{},
+			Email:    user.Email,
+			Projects: []string{},
 		}
 
 		jsonStr, err := json.Marshal(scaf_user)

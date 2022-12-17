@@ -40,7 +40,7 @@ func SetupAuthMiddleware(server *gin.Engine) {
 			user.Email = claims[IdentityKey].(string)
 			return &user
 		},
-		Authenticator: UserLogin, //在这里可以写我们的登录验证逻辑
+		Authenticator: UserLogin,
 		Authorizator: func(data interface{}, c *gin.Context) bool { //当用户通过token请求受限接口时，会经过这段逻辑
 			v, ok := data.(*model.ScafUser)
 			log.Println(v, ok)
@@ -69,15 +69,40 @@ func SetupAuthMiddleware(server *gin.Engine) {
 	if err != nil {
 		log.Println("JWT Error:" + err.Error())
 	}
+	log.Printf("%p\n", AuthMiddleware.Authenticator)
+}
+
+func MemberCheck() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// 	token, err := AuthMiddleware.ParseToken(c)
+		// 	if err != nil {
+		// 		c.JSON(http.StatusUnauthorized, gin.H{
+		// 			"status":  "Internal Server Error",
+		// 			"message": "Internal Server Error",
+		// 		})
+		// 		c.Abort()
+		// 	}
+		// 	claims := jwt.ExtractClaimsFromToken(token)
+		// 	email := claims[IdentityKey].(string)
+		// 	project_id := c.Param("project_id")
+		// 	if email != url_email {
+		// 		c.JSON(http.StatusUnauthorized, gin.H{
+		// 			"status":  "unauthorized",
+		// 			"message": "Unauthorized",
+		// 		})
+		// 		c.Abort()
+		// 	}
+		// 	c.Next()
+	}
 }
 
 func AuthCheck() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token, err := AuthMiddleware.ParseToken(c)
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"status":  "unauthorized",
-				"message": "Unauthorized",
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"status":  "Internal Server Error",
+				"message": "Internal Server Error",
 			})
 			c.Abort()
 		}
@@ -102,8 +127,8 @@ func UserLogin(c *gin.Context) (interface{}, error) {
 	if res.Status() {
 		user := res.Result()
 		scaf_user := model.ScafUser{
-			User:     user,
-			Projects: []model.Project{},
+			Email:    user.Email,
+			Projects: []string{},
 		}
 		return &scaf_user, nil
 	} else {

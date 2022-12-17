@@ -19,16 +19,18 @@ func AddAuthRouter(auth_router *gin.RouterGroup) {
 }
 
 func AddProjectRouter(project_router *gin.RouterGroup) {
+	project_router.GET("/", service.ListAllProjects)
 	project_router.Use(middleware.AuthCheck())
 	{
-		project_router.GET("/", func(c *gin.Context) {
-			c.JSON(200, gin.H{"message": "Hello World"})
-		})
+		project_router.DELETE("/:project_id", service.DeleteProject)
 		project_router.POST("/", service.CreateProject)
-		project_router.DELETE("/", service.DeleteProject)
 	}
-	project_router.GET("/repos", service.ListAllRepos)
-	project_router.POST("/repos", service.AddRepo)
-	project_router.POST("/", service.CreateProject)
-	project_router.DELETE("/", service.DeleteProject)
+}
+
+func AddRepoRouter(repo_router *gin.RouterGroup) {
+	repo_router.GET("/", service.ListAllRepos)
+	repo_router.Use(middleware.MemberCheck())
+	{
+		repo_router.POST("/", service.AddRepo)
+	}
 }
