@@ -7,12 +7,13 @@ import (
 
 	"github.com/ScafTeam/firebase-go-client/auth"
 	"github.com/gin-gonic/gin"
-	// "log"
+	"io/ioutil"
 )
 
 func main() {
 	server := gin.Default()
-	auth.Auth("AIzaSyAvQMZVhXbBZ61DdypPJG-zsg0NHnqKEBQ")
+	key, _ := ioutil.ReadFile("database/key.txt")
+	auth.Auth(string(key))
 
 	middleware.SetupAuthMiddleware(server)
 	database.SetupFirebase()
