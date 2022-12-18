@@ -11,10 +11,10 @@ import (
 
 func main() {
 	server := gin.Default()
-	auth.Auth(database.Key)
 
 	middleware.SetupAuthMiddleware(server)
 	database.SetupFirebase()
+	auth.Auth(database.Key)
 
 	auth_router := server.Group("/")
 	router.AddAuthRouter(auth_router)

@@ -25,12 +25,15 @@ func readConfig() (string, string) {
 	scanner := bufio.NewScanner(file)
 	scanner.Scan()
 	key := scanner.Text()
+	scanner.Scan()
 	id := scanner.Text()
 	return key, id
 }
 
 func SetupFirebase() {
 	Key, ID = readConfig()
+	log.Print(ID)
+	log.Print(Key)
 	ctx := context.Background()
 	opt := option.WithCredentialsFile("database/serviceAccount.json")
 	config := &firebase.Config{ProjectID: ID}
