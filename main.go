@@ -25,5 +25,8 @@ func main() {
 	repo_router := project_router.Group("/:project_id/repo")
 	router.AddRepoRouter(repo_router)
 
+	kanban_router := project_router.Group("/:project_id/kanban")
+	router.AddKanbanRouter(kanban_router)
+
 	server.Run(":8000")
 }

@@ -64,11 +64,20 @@ func ListKanban(c *gin.Context) {
 	})
 }
 
-func AddTodoTask(c *gin.Context) {
+func AddTask(c *gin.Context) {
+	list_type := c.Param("mode")
+	if list_type != "Todo" && list_type != "InProgress" && list_type != "Done" {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Not Found",
+		})
+		return
+	}
+
+	project_id := c.Param("project_id")
 	log.Println("add task")
 	req := make(map[string]interface{})
 	c.BindJSON(&req)
-	project_id := c.Param("project_id")
+	log.Println(list_type)
 	task_id := shortuuid.New()
 
 	task := model.Task{
@@ -76,12 +85,11 @@ func AddTodoTask(c *gin.Context) {
 		Name:        req["Name"].(string),
 		Description: req["Description"].(string),
 	}
-
 	_, err := database.Client.
 		Doc("kanbans/"+project_id).
 		Update(context.Background(), []firestore.Update{
 			{
-				Path:  "Todo",
+				Path:  list_type,
 				Value: firestore.ArrayUnion(task),
 			},
 		})
@@ -96,25 +104,49 @@ func AddTodoTask(c *gin.Context) {
 	})
 }
 
-func AddInProgressTask(c *gin.Context) {
-	log.Println("add task")
+func DeleteTask(c *gin.Context) {
+	list_type := c.Param("mode")
+	if list_type != "Todo" && list_type != "InProgress" && list_type != "Done" {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Not Found",
+		})
+		return
+	}
+	project_id := c.Param("project_id")
+	log.Println(`delete ${list_type} task`)
 	req := make(map[string]interface{})
 	c.BindJSON(&req)
-	project_id := c.Param("project_id")
-	task_id := shortuuid.New()
+	task_id := req["TaskId"].(string)
 
-	task := model.Task{
-		Id:          task_id,
-		Name:        req["Name"].(string),
-		Description: req["Description"].(string),
+	dsnap, err := database.Client.
+		Doc("kanbans/" + project_id).
+		Get(context.Background())
+	if err != nil {
+		log.Printf("An get task array error has occurred: %s", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": err,
+		})
+	}
+	tasks := dsnap.Data()[list_type].([]interface{})
+	new_tasks := []model.Task{}
+	for _, i := range tasks {
+		task := model.Task{
+			Id:          i.(map[string]interface{})["Id"].(string),
+			Name:        i.(map[string]interface{})["Name"].(string),
+			Description: i.(map[string]interface{})["Description"].(string),
+		}
+		if task.Id == task_id {
+			continue
+		}
+		new_tasks = append(new_tasks, task)
 	}
 
-	_, err := database.Client.
+	_, err = database.Client.
 		Doc("kanbans/"+project_id).
 		Update(context.Background(), []firestore.Update{
 			{
-				Path:  "InProgress",
-				Value: firestore.ArrayUnion(task),
+				Path:  list_type,
+				Value: new_tasks,
 			},
 		})
 	if err != nil {
@@ -123,117 +155,8 @@ func AddInProgressTask(c *gin.Context) {
 			"message": err,
 		})
 	}
+
 	c.JSON(http.StatusCreated, gin.H{
-		"message": "add in progress task",
+		"message": `delete ${list_type} task`,
 	})
 }
-
-func AddDoneTask(c *gin.Context) {
-	log.Println("add task")
-	req := make(map[string]interface{})
-	c.BindJSON(&req)
-	project_id := c.Param("project_id")
-	task_id := shortuuid.New()
-
-	task := model.Task{
-		Id:          task_id,
-		Name:        req["Name"].(string),
-		Description: req["Description"].(string),
-	}
-
-	_, err := database.Client.
-		Doc("kanbans/"+project_id).
-		Update(context.Background(), []firestore.Update{
-			{
-				Path:  "Done",
-				Value: firestore.ArrayUnion(task),
-			},
-		})
-	if err != nil {
-		log.Printf("An error has occurred: %s", err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": err,
-		})
-	}
-	c.JSON(http.StatusCreated, gin.H{
-		"message": "add done task",
-	})
-}
-
-// func DeleteTodoTask(c *gin.Context) {
-// 	log.Println("delete Todo task")
-// 	req := make(map[string]interface{})
-// 	c.BindJSON(&req)
-// 	project_id := c.Param("project_id")
-// 	task_id := req["TaskId"].(string)
-
-// 	_, err := database.Client.
-// 		Doc("kanbans/"+project_id).
-// 		Update(context.Background(), []firestore.Update{
-// 			{
-// 				FieldPath: []string{"Todo"},
-// 				Remove:    []interface{}{},
-// 			},
-// 		})
-// 	if err != nil {
-// 		log.Printf("An error has occurred: %s", err)
-// 		c.JSON(http.StatusInternalServerError, gin.H{
-// 			"message": err,
-// 		})
-// 	}
-// 	c.JSON(http.StatusCreated, gin.H{
-// 		"message": "delete todo task",
-// 	})
-// }
-
-// func DeleteInProgressTask(c *gin.Context) {
-// 	log.Println("delete InProgress task")
-// 	req := make(map[string]interface{})
-// 	c.BindJSON(&req)
-// 	project_id := c.Param("project_id")
-// 	task_id := req["TaskId"].(string)
-
-// 	_, err := database.Client.
-// 		Doc("kanbans/"+project_id).
-// 		Update(context.Background(), []firestore.Update{
-// 			{
-// 				Path:  "InProgress",
-// 				Value: firestore.ArrayRemove(task_id),
-// 			},
-// 		})
-// 	if err != nil {
-// 		log.Printf("An error has occurred: %s", err)
-// 		c.JSON(http.StatusInternalServerError, gin.H{
-// 			"message": err,
-// 		})
-// 	}
-// 	c.JSON(http.StatusCreated, gin.H{
-// 		"message": "delete inprogress task",
-// 	})
-// }
-
-// func DeleteDoneTask(c *gin.Context) {
-// 	log.Println("delete Done task")
-// 	req := make(map[string]interface{})
-// 	c.BindJSON(&req)
-// 	project_id := c.Param("project_id")
-// 	task_id := req["TaskId"].(string)
-
-// 	_, err := database.Client.
-// 		Doc("kanbans/"+project_id).
-// 		Update(context.Background(), []firestore.Update{
-// 			{
-// 				Path:  "Done",
-// 				Value: firestore.ArrayRemove(task_id),
-// 			},
-// 		})
-// 	if err != nil {
-// 		log.Printf("An error has occurred: %s", err)
-// 		c.JSON(http.StatusInternalServerError, gin.H{
-// 			"message": err,
-// 		})
-// 	}
-// 	c.JSON(http.StatusCreated, gin.H{
-// 		"message": "delete done task",
-// 	})
-// }

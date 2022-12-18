@@ -38,3 +38,12 @@ func AddRepoRouter(repo_router *gin.RouterGroup) {
 		repo_router.POST("/", service.AddRepo)
 	}
 }
+
+func AddKanbanRouter(kanban_router *gin.RouterGroup) {
+	kanban_router.GET("/", service.ListKanban)
+	kanban_router.Use(middleware.MemberCheck())
+	{
+		kanban_router.POST("/:mode", service.AddTask)
+		kanban_router.DELETE("/:mode", service.DeleteTask)
+	}
+}

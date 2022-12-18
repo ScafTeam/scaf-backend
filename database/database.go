@@ -32,8 +32,6 @@ func readConfig() (string, string) {
 
 func SetupFirebase() {
 	Key, ID = readConfig()
-	log.Print(ID)
-	log.Print(Key)
 	ctx := context.Background()
 	opt := option.WithCredentialsFile("database/serviceAccount.json")
 	config := &firebase.Config{ProjectID: ID}
