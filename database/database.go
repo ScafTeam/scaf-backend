@@ -1,8 +1,10 @@
 package database
 
 import (
+	"bufio"
 	"context"
 	"log"
+	"os"
 
 	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"
@@ -10,13 +12,28 @@ import (
 )
 
 var Client *firestore.Client
+var Key, ID string
 
 // Use a service account
+func readConfig() (string, string) {
+	file, err := os.Open("database/config.txt")
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	scanner.Scan()
+	key := scanner.Text()
+	id := scanner.Text()
+	return key, id
+}
 
 func SetupFirebase() {
+	Key, ID = readConfig()
 	ctx := context.Background()
 	opt := option.WithCredentialsFile("database/serviceAccount.json")
-	config := &firebase.Config{ProjectID: "test-e7825"}
+	config := &firebase.Config{ProjectID: ID}
 	app, err := firebase.NewApp(ctx, config, opt)
 	if err != nil {
 		log.Fatalln(err)
