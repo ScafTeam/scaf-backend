@@ -7,14 +7,11 @@ import (
 
 	"github.com/ScafTeam/firebase-go-client/auth"
 	"github.com/gin-gonic/gin"
-    "bufio"
-    "os"
 )
 
 func main() {
 	server := gin.Default()
-    key := readKey()
-	auth.Auth(key)
+	auth.Auth(database.Key)
 
 	middleware.SetupAuthMiddleware(server)
 	database.SetupFirebase()
@@ -29,16 +26,4 @@ func main() {
 	router.AddRepoRouter(repo_router)
 
 	server.Run(":8000")
-}
-
-func readKey() string {
-  file, err := os.Open("database/key.txt")
-  if err != nil {
-    panic(err)
-  }
-  defer file.Close()
-
-  scanner := bufio.NewScanner(file)
-  scanner.Scan()
-  return scanner.Text()
 }
