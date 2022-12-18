@@ -7,6 +7,10 @@ go mod init backend
 go mod tidy
 go run .
 ```
+需要修改firbase的project ID、Web API Key及serviceAccount.json
+firbase project id: 專案設定內查看
+Web API Key: 專案設定內查看
+serviceAccount.json: https://sharma-vikashkr.medium.com/firebase-how-to-setup-a-firebase-service-account-836a70bb6646
 
 ### api (need jwt)
 1. **signin:** ```/signin```<br>
