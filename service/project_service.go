@@ -20,17 +20,7 @@ import (
 )
 
 func ListAllProjects(c *gin.Context) {
-	claims, err := middleware.AuthMiddleware.GetClaimsFromJWT(c)
-
-	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"message": err.Error(),
-		})
-		return
-	}
-
-	userEmail := claims[middleware.IdentityKey].(string)
+	userEmail := c.Param("user_email")
 	log.Println("get projects")
 	iter := database.Client.Collection("projects").
 		Where("Members", "array-contains", userEmail).
@@ -112,6 +102,20 @@ func CreateProject(c *gin.Context) {
 			"message": err.Error(),
 		})
 	}
+	_, err = database.Client.
+		Doc("kanbans/"+project_uuid).
+		Set(context.Background(), map[string]interface{}{
+			"ProjectId":  project_uuid,
+			"Todo":       []model.Task{},
+			"InProgress": []model.Task{},
+			"Done":       []model.Task{},
+		})
+	if err != nil {
+		log.Printf("An error has occurred: %s", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": err.Error(),
+		})
+	}
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "project created",
 	})
@@ -126,7 +130,17 @@ func DeleteProject(c *gin.Context) {
 		Doc(project_id).
 		Delete(context.Background())
 	if err != nil {
-		log.Printf("An error has occurred: %s", err)
+		log.Printf("An delete project error has occurred: %s", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": err,
+		})
+	}
+	_, err = database.Client.
+		Collection("kanbans").
+		Doc(project_id).
+		Delete(context.Background())
+	if err != nil {
+		log.Printf("An delete kanban error has occurred: %s", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": err,
 		})
