@@ -22,7 +22,7 @@ func SetupAuthMiddleware(server *gin.Engine) {
 		Realm:            "test zone",   //标识
 		SigningAlgorithm: "HS256",       //加密算法
 		Key:              []byte("111"), //密钥
-		Timeout:          time.Hour,
+		Timeout:          36 * time.Hour,
 		MaxRefresh:       time.Hour,   //刷新最大延长时间
 		IdentityKey:      IdentityKey, //指定cookie的id
 		SendCookie:       true,
