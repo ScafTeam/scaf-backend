@@ -12,6 +12,12 @@ firbase project id: 專案設定內查看
 Web API Key: 專案設定內查看
 serviceAccount.json: https://sharma-vikashkr.medium.com/firebase-how-to-setup-a-firebase-service-account--6a70bb6646
 
+- **config.txt**
+```
+{WEB KEY API}
+{PROJECT ID}
+```
+
 ### api (不用jwt的都有寫上去其餘都是需要jwt的)
 - **signin:** ```/signin``` (不用jwt)<br>
 method: POST<br>
@@ -77,7 +83,7 @@ Data:
 ```
 - **delete Task**```{user_email}/project/{project_id}/kanban/{Todo|InProgress|Done}```<br>
 method: DELETE<br>
-- **add member**```/{user_email}/project/{project_id}/join ```<br>
+- **add member**```/{user_email}/project/{project_id}/join ```(未完成)<br>
 method: POST<br>
 
 
