@@ -19,7 +19,7 @@ func main() {
 	auth_router := server.Group("/")
 	router.AddAuthRouter(auth_router)
 
-	project_router := server.Group("/:user_email/project")
+	project_router := server.Group("user/:user_email/project")
 	router.AddProjectRouter(project_router)
 
 	repo_router := project_router.Group("/:project_id/repo")

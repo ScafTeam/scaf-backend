@@ -1,4 +1,5 @@
 database/*.json
+gin-bin.exe
 *.mod
 *.sum
 *.txt
