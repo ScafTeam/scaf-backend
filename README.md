@@ -72,9 +72,17 @@ Data:
     "Url": "RepoUrl"
 }
 ```
-- **create kanban:** ```{user_email}/project/{project_id}/kanban```<br>
-method: POST<br>
-- **add Task:** ```{user_email}/project/{project_id}/kanban/{Todo|InProgress|Done}```<br>
+<!-- - **create kanban:** ```{user_email}/project/{project_id}/kanban```<br>
+method: POST<br> -->
+- **create new workflow** ```{user_email}/project/{project_id}/kanban```<br>
+method: PUT<br>
+Data:
+```json
+{
+    "Name": "Name",
+}
+```
+- **add Task:** ```{user_email}/project/{project_id}/kanban/```<br>
 method: POST<BR>
 Data:
 ```json
@@ -115,3 +123,8 @@ method: POST<br>
 - [ ] 編輯看板任務(Todo, InProgress, Done)
 - [ ] 邀請加入專案
 - [ ] google日曆授權
+
+
+## Refactor list
+
+- [ ] 將 Request model 
