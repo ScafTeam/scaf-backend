@@ -17,10 +17,21 @@ func CreateKanban(c *gin.Context) {
 	project_id := c.Param("project_id")
 
 	kanban := model.Kanban{
-		ProjectId:  project_id,
-		Todo:       []model.Task{},
-		InProgress: []model.Task{},
-		Done:       []model.Task{},
+		ProjectId: project_id,
+		Workflows: []model.Workflow{
+			{
+				Name:  "Todo",
+				Tasks: []model.Task{},
+			},
+			{
+				Name:  "InProgress",
+				Tasks: []model.Task{},
+			},
+			{
+				Name:  "Done",
+				Tasks: []model.Task{},
+			},
+		},
 	}
 
 	_, err := database.Client.
@@ -53,6 +64,8 @@ func ListKanban(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": err,
 		})
+
+		return
 	}
 
 	var kanban model.Kanban
@@ -64,91 +77,161 @@ func ListKanban(c *gin.Context) {
 	})
 }
 
-func AddTask(c *gin.Context) {
-	list_type := c.Param("mode")
-	if list_type != "Todo" && list_type != "InProgress" && list_type != "Done" {
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "Not Found",
+func AddWorkFlow(c *gin.Context) {
+	log.Println("Add workflow")
+	project_id := c.Param("project_id")
+	req := make(map[string]interface{})
+	c.BindJSON(&req)
+
+	workflow := model.Workflow{
+		Name:  req["Name"].(string),
+		Tasks: []model.Task{},
+	}
+
+	_, err := database.Client.
+		Doc("kanbans/"+project_id).
+		Update(context.Background(), []firestore.Update{
+			{
+				Path:  "Workflows",
+				Value: firestore.ArrayUnion(workflow),
+			},
 		})
+
+	if err != nil {
+		log.Printf("An error has occurred: %s", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": err,
+		})
+
 		return
 	}
 
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "Add workflow success",
+	})
+}
+
+func AddTask(c *gin.Context) {
 	project_id := c.Param("project_id")
 	log.Println("add task")
 	req := make(map[string]interface{})
 	c.BindJSON(&req)
-	log.Println(list_type)
 	task_id := shortuuid.New()
+
+	workflow_name := req["WorkflowName"].(string)
+
+	// check workflow_name in firebase kanbans
+	dsnap, err := database.Client.
+		Doc("kanbans/" + project_id).
+		Get(context.Background())
+
+	if err != nil {
+		log.Printf("An error has occurred: %s", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": err,
+		})
+		return
+	}
+
+	var kanban model.Kanban
+	dsnap.DataTo(&kanban)
+
+	var workflow_index int
+	for idx, wf := range kanban.Workflows {
+		if wf.Name == workflow_name {
+			workflow_index = idx
+		}
+	}
+
+	if kanban.Workflows[workflow_index].Name == "" {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "workflow not found",
+		})
+		return
+	}
 
 	task := model.Task{
 		Id:          task_id,
 		Name:        req["Name"].(string),
 		Description: req["Description"].(string),
 	}
-	_, err := database.Client.
+
+	kanban.Workflows[workflow_index].Tasks = append(kanban.Workflows[workflow_index].Tasks, task)
+
+	_, err = database.Client.
 		Doc("kanbans/"+project_id).
-		Update(context.Background(), []firestore.Update{
-			{
-				Path:  list_type,
-				Value: firestore.ArrayUnion(task),
-			},
-		})
+		Set(context.Background(), kanban)
+
 	if err != nil {
 		log.Printf("An error has occurred: %s", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": err,
 		})
 	}
+
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "add todo task",
 	})
 }
 
 func DeleteTask(c *gin.Context) {
-	list_type := c.Param("mode")
-	if list_type != "Todo" && list_type != "InProgress" && list_type != "Done" {
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "Not Found",
-		})
-		return
-	}
 	project_id := c.Param("project_id")
-	log.Println(`delete ${list_type} task`)
 	req := make(map[string]interface{})
 	c.BindJSON(&req)
 	task_id := req["TaskId"].(string)
 
+	workflow_name := req["WorkflowName"].(string)
+
 	dsnap, err := database.Client.
 		Doc("kanbans/" + project_id).
 		Get(context.Background())
+
 	if err != nil {
 		log.Printf("An get task array error has occurred: %s", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": err,
 		})
+
+		return
 	}
-	tasks := dsnap.Data()[list_type].([]interface{})
-	new_tasks := []model.Task{}
-	for _, i := range tasks {
-		task := model.Task{
-			Id:          i.(map[string]interface{})["Id"].(string),
-			Name:        i.(map[string]interface{})["Name"].(string),
-			Description: i.(map[string]interface{})["Description"].(string),
+
+	var kanban model.Kanban
+	dsnap.DataTo(&kanban)
+
+	var workflow_index int
+	for idx, wf := range kanban.Workflows {
+		if wf.Name == workflow_name {
+			workflow_index = idx
 		}
+	}
+
+	if kanban.Workflows[workflow_index].Name == "" {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "workflow not found",
+		})
+		return
+	}
+
+	var task_index int
+	for idx, task := range kanban.Workflows[workflow_index].Tasks {
 		if task.Id == task_id {
-			continue
+			task_index = idx
 		}
-		new_tasks = append(new_tasks, task)
 	}
+
+	if kanban.Workflows[workflow_index].Tasks[task_index].Id == "" {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "task not found",
+		})
+		return
+	}
+
+	kanban.Workflows[workflow_index].Tasks = append(kanban.Workflows[workflow_index].Tasks[:task_index], kanban.Workflows[workflow_index].Tasks[task_index+1:]...)
 
 	_, err = database.Client.
 		Doc("kanbans/"+project_id).
-		Update(context.Background(), []firestore.Update{
-			{
-				Path:  list_type,
-				Value: new_tasks,
-			},
-		})
+		Set(context.Background(), kanban)
+
 	if err != nil {
 		log.Printf("An error has occurred: %s", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -157,6 +240,6 @@ func DeleteTask(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, gin.H{
-		"message": `delete ${list_type} task`,
+		"message": `delete ${workflow_name} task id = ${task_id} success`,
 	})
 }

@@ -43,7 +43,8 @@ func AddKanbanRouter(kanban_router *gin.RouterGroup) {
 	kanban_router.GET("/", service.ListKanban)
 	kanban_router.Use(middleware.MemberCheck())
 	{
-		kanban_router.POST("/:mode", service.AddTask)
-		kanban_router.DELETE("/:mode", service.DeleteTask)
+		kanban_router.PUT("/", service.AddWorkFlow)
+		kanban_router.POST("/", service.AddTask)
+		kanban_router.DELETE("/", service.DeleteTask)
 	}
 }

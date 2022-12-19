@@ -102,14 +102,27 @@ func CreateProject(c *gin.Context) {
 			"message": err.Error(),
 		})
 	}
+
 	_, err = database.Client.
 		Doc("kanbans/"+project_uuid).
 		Set(context.Background(), map[string]interface{}{
-			"ProjectId":  project_uuid,
-			"Todo":       []model.Task{},
-			"InProgress": []model.Task{},
-			"Done":       []model.Task{},
+			"ProjectId": project_uuid,
+			"Workflows": []model.Workflow{
+				{
+					Name:  "Todo",
+					Tasks: []model.Task{},
+				},
+				{
+					Name:  "InProgress",
+					Tasks: []model.Task{},
+				},
+				{
+					Name:  "Done",
+					Tasks: []model.Task{},
+				},
+			},
 		})
+
 	if err != nil {
 		log.Printf("An error has occurred: %s", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -118,6 +131,7 @@ func CreateProject(c *gin.Context) {
 	}
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "project created",
+		"id":      project_uuid,
 	})
 }
 
