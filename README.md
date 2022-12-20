@@ -60,14 +60,14 @@ Request:
 
 ### Get User Data 🚧 (施工中)
 
-```Required JWT```
+```Required JWT```  
 ```GET /user/{user_email}/```
 
 user_email 可為空，為空代表自己。
 
 ### Update User Data 🚧 (施工中)
 
-```Required JWT```
+```Required JWT```  
 ```PUT /user/{user_email}/```
 
 ```json
@@ -80,7 +80,7 @@ user_email 可為空，為空代表自己。
 
 ### Update User Password 🚧 (施工中)
 
-```Required JWT```
+```Required JWT```  
 ```PUT /user/{user_email}/reset```
 
 ```json
@@ -92,12 +92,12 @@ user_email 可為空，為空代表自己。
 
 ### 取得 Google 日曆授權 🚧 (施工中)
 
-```Required JWT```
+```Required JWT```  
 ```GET /user/{user_email}/calendar```
 
 ### Refresh ❌ (目前不可用)
 
-```Required JWT```
+```Required JWT```  
 ```POST /refresh/```
 
 ### Test (測試用)
@@ -112,7 +112,7 @@ list user's project
 
 ### Create Project
 
-```Required JWT```
+```Required JWT```  
 ```POST /user/{user_email}/project/```
 
 ```json
@@ -125,17 +125,17 @@ list user's project
 
 ### Delete Project
 
-```Required JWT```
+```Required JWT```  
 ```DELETE /user/{user_email}/project/{project_id}/```
 
 ### List All repos
 
-```Required JWT```
+```Required JWT```  
 ```GET /user/{user_email}/project/{project_id}/repo/```
 
 ### Add Repo
 
-```Required JWT```
+```Required JWT```  
 ```POST /user/{user_email}/project/{project_id}/repo/```
 
 ```json
@@ -147,7 +147,7 @@ list user's project
 
 ### Update Repo 🚧 (施工中)
 
-```Required JWT```
+```Required JWT```  
 ```PUT /user/{user_email}/project/{project_id}/repo/{repo_id}/```
 
 ```json
@@ -159,22 +159,22 @@ list user's project
 
 ### Delete Repo 🚧 (施工中)
 
-```Required JWT```
+```Required JWT```  
 ```DELETE /user/{user_email}/project/{project_id}/repo/{repo_id}/```
 
 ### Create Kanban ❌ (目前不可用)
 
-```Required JWT```
+```Required JWT```  
 ```POST /user/{user_email}/project/{project_id}/kanban/```
 
 ### List Workflow
 
-```Required JWT```
+```Required JWT```  
 ```GET /user/{user_email}/project/{project_id}/kanban/```
 
 ### Create Workflow
 
-```Required JWT```
+```Required JWT```  
 ```PUT /user/{user_email}/project/{project_id}/kanban/```
 
 ```json
@@ -185,12 +185,12 @@ list user's project
 
 ### Delete Workflow 🚧 (施工中)
 
-```Required JWT```
+```Required JWT```  
 ```DELETE /user/{user_email}/project/{project_id}/kanban/{workflow_id}/```
 
 ### Add Task 🚧 (施工中)
 
-```Required JWT```
+```Required JWT```  
 ```POST /user/{user_email}/project/{project_id}/kanban/```
 
 ```json
@@ -202,17 +202,17 @@ list user's project
 
 ### Delete Task 🚧 (施工中)
 
-```Required JWT```
+```Required JWT```  
 ```DELETE /user/{user_email}/project/{project_id}/kanban/{workflow_id}/{task_id}/```
 
 ### Get Members 🚧 (施工中)
 
-```Required JWT```
+```Required JWT```  
 ```GET /user/{user_email}/project/{project_id}/member/```
 
 ### Add Member 🚧 (施工中)
 
-```Required JWT```
+```Required JWT```  
 ```POST /user/{user_email}/project/{project_id}/member/```
 
 ```json
@@ -223,17 +223,17 @@ list user's project
 
 ### Delete Member 🚧 (施工中)
 
-```Required JWT```
+```Required JWT```  
 ```DELETE /user/{user_email}/project/{project_id}/member/{member_email}/```
 
 ### Get Document 🚧 (施工中)
 
-```Required JWT```
+```Required JWT```  
 ```GET /user/{user_email}/project/{project_id}/doc/```
 
 ### Add Document 🚧 (施工中)
 
-```Required JWT```
+```Required JWT```  
 ```POST /user/{user_email}/project/{project_id}/doc/```
 
 ```json
@@ -245,7 +245,7 @@ list user's project
 
 ### Update Document 🚧 (施工中)
 
-```Required JWT```
+```Required JWT```  
 ```PUT /user/{user_email}/project/{project_id}/doc/{doc_id}/```
 
 ```json
@@ -257,7 +257,7 @@ list user's project
 
 ### Delete Document 🚧 (施工中)
 
-```Required JWT```
+```Required JWT```  
 ```DELETE /user/{user_email}/project/{project_id}/doc/{doc_id}/```
 
 ### firebase
