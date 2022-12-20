@@ -122,7 +122,7 @@ func AuthCheck() gin.HandlerFunc {
 		if email != url_email {
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"status":  "Unauthorized",
-				"message": "Unauthorized",
+				"message": "You are not the author of this project",
 			})
 			c.Abort()
 		}

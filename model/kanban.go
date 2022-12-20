@@ -1,17 +1,17 @@
 package model
 
 type Kanban struct {
-	ProjectId string     `json:"ProjectId"`
-	Workflows []Workflow `json:"Workflows"`
+	ProjectId string     `json:"projectId"`
+	Workflows []Workflow `json:"workflows"`
 }
 
 type Workflow struct {
-	Name  string `json:"Name"`
-	Tasks []Task `json:"Tasks"`
+	Name  string `json:"name"`
+	Tasks []Task `json:"tasks"`
 }
 
 type Task struct {
-	Id          string `json:"Id"`
-	Name        string `json:"Name"`
-	Description string `json:"Description"`
+	Id          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }

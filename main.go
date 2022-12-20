@@ -22,10 +22,10 @@ func main() {
 	project_router := server.Group("user/:user_email/project")
 	router.AddProjectRouter(project_router)
 
-	repo_router := project_router.Group("/:project_id/repo")
+	repo_router := project_router.Group("/:project_name/repo")
 	router.AddRepoRouter(repo_router)
 
-	kanban_router := project_router.Group("/:project_id/kanban")
+	kanban_router := project_router.Group("/:project_name/kanban")
 	router.AddKanbanRouter(kanban_router)
 
 	server.Run(":8000")
