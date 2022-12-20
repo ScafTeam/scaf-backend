@@ -354,7 +354,7 @@ func AddMember(c *gin.Context) {
 		log.Printf("An error has occurred: %s", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"status":  "Internal Server Error",
-			"message": err,
+			"message": err.Error(),
 		})
 	}
 
