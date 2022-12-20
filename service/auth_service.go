@@ -13,9 +13,17 @@ import (
 )
 
 func UserRegister(c *gin.Context) {
-	context_json := make(map[string]interface{})
-	c.BindJSON(&context_json)
-	res := auth.SignUpWithEmailAndPassword(context_json["email"].(string), context_json["password"].(string))
+
+	var req model.UserRegisterRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  "BadRequst",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	res := auth.SignUpWithEmailAndPassword(req.Email, req.Password)
 	log.Println(res.Status())
 	if res.Status() {
 		user := res.Result()
@@ -27,7 +35,8 @@ func UserRegister(c *gin.Context) {
 		jsonStr, err := json.Marshal(scaf_user)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": err,
+				"status":  "Internal Server Error",
+				"message": err.Error(),
 			})
 			return
 		}
@@ -35,8 +44,10 @@ func UserRegister(c *gin.Context) {
 		var mapData map[string]interface{}
 		if err := json.Unmarshal(jsonStr, &mapData); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": err,
+				"status":  "Internal Server Error",
+				"message": err.Error(),
 			})
+			return
 		}
 		_, err = database.Client.
 			Doc("users/"+scaf_user.Email).
@@ -44,28 +55,40 @@ func UserRegister(c *gin.Context) {
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": err,
+				"status":  "Internal Server Error",
+				"message": err.Error(),
 			})
 			return
 		}
 
 		c.JSON(http.StatusOK, gin.H{
-			"status":  "authorized",
+			"status":  "Authorized",
 			"message": "Sign up success",
 		})
+		return
 	} else {
 		log.Println(res.ErrorMessage())
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"status":  "unauthorized",
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  "BadRequst",
 			"message": res.ErrorMessage(),
 		})
+		return
 	}
 }
 
 func UserForgotPassword(c *gin.Context) {
-	json := make(map[string]interface{})
-	c.BindJSON(&json)
-	res := auth.ForgotPassword(json["email"].(string))
+
+	var req model.UserForgotPasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  "BadRequst",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	c.BindJSON(&req)
+	res := auth.ForgotPassword(req.Email)
 	if res.Status() {
 		log.Println("Email is sent")
 		log.Println(res)
@@ -77,7 +100,7 @@ func UserForgotPassword(c *gin.Context) {
 		// EMAIL_NOT_FOUND 沒有此用戶
 		log.Println(res.ErrorMessage())
 		c.JSON(http.StatusBadRequest, gin.H{
-			"status":  "eamil not found",
+			"status":  "Eamil Not Found",
 			"message": res.ErrorMessage(),
 		})
 	}

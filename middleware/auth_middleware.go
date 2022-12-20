@@ -57,7 +57,7 @@ func SetupAuthMiddleware(server *gin.Engine) {
 		},
 		LoginResponse: func(c *gin.Context, code int, token string, expire time.Time) { //登录成功时响应
 			c.JSON(http.StatusOK, gin.H{
-				"status":  "authorized",
+				"status":  "Authorized",
 				"token":   token,
 				"expire":  expire.Format(time.RFC3339),
 				"message": "Sign in success",
@@ -89,6 +89,7 @@ func MemberCheck() gin.HandlerFunc {
 				"status":  "Internal Server Error",
 				"message": err.Error(),
 			})
+			c.Abort()
 		}
 		m := dsnap.Data()["Members"].([]interface{})
 		for _, member := range m {
@@ -98,7 +99,7 @@ func MemberCheck() gin.HandlerFunc {
 			}
 		}
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"status":  "unauthorized",
+			"status":  "Unauthorized",
 			"message": "Unauthorized",
 		})
 		c.Abort()
@@ -120,7 +121,7 @@ func AuthCheck() gin.HandlerFunc {
 		url_email := c.Param("user_email")
 		if email != url_email {
 			c.JSON(http.StatusUnauthorized, gin.H{
-				"status":  "unauthorized",
+				"status":  "Unauthorized",
 				"message": "Unauthorized",
 			})
 			c.Abort()
@@ -130,9 +131,13 @@ func AuthCheck() gin.HandlerFunc {
 }
 
 func UserLogin(c *gin.Context) (interface{}, error) {
-	json := make(map[string]interface{})
-	c.BindJSON(&json)
-	res := auth.SignInWithEmailAndPassword(json["email"].(string), json["password"].(string))
+	var req model.UserLoginRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		log.Println(err)
+		return nil, jwt.ErrMissingLoginValues
+	}
+
+	res := auth.SignInWithEmailAndPassword(req.Email, req.Password)
 	if res.Status() {
 		user := res.Result()
 		scaf_user := model.ScafUser{
