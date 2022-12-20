@@ -110,6 +110,11 @@ list user's project
 
 ```GET /user/{user_email}/project/```
 
+### Get Project
+
+```Required JWT```  
+```GET /user/{user_email}/project/{project_name}/```
+
 ### Create Project
 
 ```Required JWT```  
@@ -123,20 +128,33 @@ list user's project
 }
 ```
 
+### Update Project
+
+```Required JWT```  
+```PUT /user/{user_email}/project/{project_name}/```
+
+```json
+{
+    "name": "[project name]",
+    "devTools": [],
+    "devMode": "[waterfall|scrum]"
+}
+```
+
 ### Delete Project
 
 ```Required JWT```  
-```DELETE /user/{user_email}/project/{project_id}/```
+```DELETE /user/{user_email}/project/{project_name}/```
 
-### List All repos
-
-```Required JWT```  
-```GET /user/{user_email}/project/{project_id}/repo/```
-
-### Add Repo
+### List All repos 🚧 (施工中)
 
 ```Required JWT```  
-```POST /user/{user_email}/project/{project_id}/repo/```
+```GET /user/{user_email}/project/{project_name}/repo/```
+
+### Add Repo 🚧 (施工中)
+
+```Required JWT```  
+```POST /user/{user_email}/project/{project_name}/repo/```
 
 ```json
 {
@@ -148,7 +166,7 @@ list user's project
 ### Update Repo 🚧 (施工中)
 
 ```Required JWT```  
-```PUT /user/{user_email}/project/{project_id}/repo/{repo_id}/```
+```PUT /user/{user_email}/project/{project_name}/repo/{repo_id}/```
 
 ```json
 {
@@ -157,25 +175,25 @@ list user's project
 }
 ```
 
-### Delete Repo 🚧 (施工中)
+### Delete Repo 🚧 (施工中) 
 
 ```Required JWT```  
-```DELETE /user/{user_email}/project/{project_id}/repo/{repo_id}/```
+```DELETE /user/{user_email}/project/{project_name}/repo/{repo_id}/```
 
 ### Create Kanban ❌ (目前不可用)
 
 ```Required JWT```  
-```POST /user/{user_email}/project/{project_id}/kanban/```
+```POST /user/{user_email}/project/{project_name}/kanban/```
 
-### List Workflow
-
-```Required JWT```  
-```GET /user/{user_email}/project/{project_id}/kanban/```
-
-### Create Workflow
+### List Workflow 🚧 (施工中)
 
 ```Required JWT```  
-```PUT /user/{user_email}/project/{project_id}/kanban/```
+```GET /user/{user_email}/project/{project_name}/kanban/```
+
+### Create Workflow 🚧 (施工中)
+
+```Required JWT```  
+```PUT /user/{user_email}/project/{project_name}/kanban/```
 
 ```json
 {
@@ -186,12 +204,12 @@ list user's project
 ### Delete Workflow 🚧 (施工中)
 
 ```Required JWT```  
-```DELETE /user/{user_email}/project/{project_id}/kanban/{workflow_id}/```
+```DELETE /user/{user_email}/project/{project_name}/kanban/{workflow_id}/```
 
 ### Add Task 🚧 (施工中)
 
 ```Required JWT```  
-```POST /user/{user_email}/project/{project_id}/kanban/```
+```POST /user/{user_email}/project/{project_name}/kanban/```
 
 ```json
 {
@@ -203,17 +221,17 @@ list user's project
 ### Delete Task 🚧 (施工中)
 
 ```Required JWT```  
-```DELETE /user/{user_email}/project/{project_id}/kanban/{workflow_id}/{task_id}/```
+```DELETE /user/{user_email}/project/{project_name}/kanban/{workflow_id}/{task_id}/```
 
 ### Get Members 🚧 (施工中)
 
 ```Required JWT```  
-```GET /user/{user_email}/project/{project_id}/member/```
+```GET /user/{user_email}/project/{project_name}/member/```
 
-### Add Member 🚧 (施工中)
+### Add Member
 
 ```Required JWT```  
-```POST /user/{user_email}/project/{project_id}/member/```
+```POST /user/{user_email}/project/{project_name}/member/```
 
 ```json
 {
@@ -224,17 +242,17 @@ list user's project
 ### Delete Member 🚧 (施工中)
 
 ```Required JWT```  
-```DELETE /user/{user_email}/project/{project_id}/member/{member_email}/```
+```DELETE /user/{user_email}/project/{project_name}/member/{member_email}/```
 
 ### Get Document 🚧 (施工中)
 
 ```Required JWT```  
-```GET /user/{user_email}/project/{project_id}/doc/```
+```GET /user/{user_email}/project/{project_name}/doc/```
 
 ### Add Document 🚧 (施工中)
 
 ```Required JWT```  
-```POST /user/{user_email}/project/{project_id}/doc/```
+```POST /user/{user_email}/project/{project_name}/doc/```
 
 ```json
 {
@@ -246,7 +264,7 @@ list user's project
 ### Update Document 🚧 (施工中)
 
 ```Required JWT```  
-```PUT /user/{user_email}/project/{project_id}/doc/{doc_id}/```
+```PUT /user/{user_email}/project/{project_name}/doc/{doc_id}/```
 
 ```json
 {
@@ -258,7 +276,7 @@ list user's project
 ### Delete Document 🚧 (施工中)
 
 ```Required JWT```  
-```DELETE /user/{user_email}/project/{project_id}/doc/{doc_id}/```
+```DELETE /user/{user_email}/project/{project_name}/doc/{doc_id}/```
 
 ### firebase
 
@@ -291,3 +309,15 @@ list user's project
 ## Refactor list
 
 - [ ] 將 Request model 
+
+## 測試案例
+
+### 欄位沒有正確輸入，例如缺少欄位等
+
+### 創建專案名稱是否唯一
+
+### 專案名稱不能有特殊字元
+
+不能有 ```/ \ ? % * : | \ " < >``` 
+
+### 沒有判斷 專案名稱是否存在
