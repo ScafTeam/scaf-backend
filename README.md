@@ -20,82 +20,245 @@ serviceAccount.json: https://sharma-vikashkr.medium.com/firebase-how-to-setup-a-
 {PROJECT ID}
 ```
 
-### api (不用jwt的都有寫上去其餘都是需要jwt的)
-- **signin:** ```/signin``` (不用jwt)<br>
-method: POST<br>
-Data:
-```json
-{
-    "email": "email",
-    "password": "password"
-}
-```
-- **signup:** ```/signup``` (不用jwt)<br>
-method: POST<br>
-Data:
-```json
-{
-    "email": "email",
-    "password": "password"
-}
-```
-- **refresh:** ```/refresh```<br>
-method: POST<br>
-需要舊的jwt token
+## RESTful API
 
-- **hello** ```/hello```<br>
-method: GET<br>
-測試AuthMiddleware用的
+⚠️ **注意** ⚠️: 網址前綴為 `{app url}:{app port}`，最後面一定要 `/` 結尾。
+⚠️ **注意** ⚠️: 所有欄位名稱首字母為小寫。
 
-- **list user's project:** ```{user_email}/project``` (不用jwt)<br>
-method: GET<br>
-- **create project:** ```{user_email}/project```<br>
-method: POST<br>
-Data:
-```json
-{
-    "Name": "test",
-    "DevTools": [],
-    "DevMode": "waterfall"
-}
-```
-- **Delete project:** ```{uesr_email}/project/{project_id}```<br>
-method: DELETE<br>
-- **list all repos:** ```{uesr_email}/project/{project_id}/repo``` (不用jwt)<br>
-method: GET<br>
-- **add repo:** ```{uesr_email}/project/{project_id}/repo```<br>
-method: POST<br>
-Data:
-```json
-{
-    "Name": "RepoName",
-    "Url": "RepoUrl"
-}
-```
-<!-- - **create kanban:** ```{user_email}/project/{project_id}/kanban```<br>
-method: POST<br> -->
-- **create new workflow** ```{user_email}/project/{project_id}/kanban```<br>
-method: PUT<br>
-Data:
-```json
-{
-    "Name": "Name",
-}
-```
-- **add Task:** ```{user_email}/project/{project_id}/kanban/```<br>
-method: POST<BR>
-Data:
-```json
-{
-    "Name": "Name",
-    "Description": "Description"
-}
-```
-- **delete Task:** ```{user_email}/project/{project_id}/kanban/{Todo|InProgress|Done}```<br>
-method: DELETE<br>
-- **add member:** ```/{user_email}/project/{project_id}/join ```(未完成)<br>
-method: POST<br>
+### SignIn
 
+```POST /signin/```
+
+Request:
+```json
+{
+    "email": "[email]",
+    "password": "[password]"
+}
+```
+
+### SignUp
+
+```POST /signup/```
+
+```json
+{
+    "email": "[email]",
+    "password": "[password]"
+}
+```
+
+### Forgot Password 🚧 (施工中)
+
+```POST /forgot/```
+
+```json
+{
+    "email": "[email]"
+}
+```
+
+### Get User Data 🚧 (施工中)
+
+```Required JWT```
+```GET /user/{user_email}/```
+
+user_email 可為空，為空代表自己。
+
+### Update User Data 🚧 (施工中)
+
+```Required JWT```
+```PUT /user/{user_email}/```
+
+```json
+{
+    "avatar": "[avatar base64]",
+    "nickname": "[nickname]",
+    "password": "[password]"
+}
+```
+
+### Update User Password 🚧 (施工中)
+
+```Required JWT```
+```PUT /user/{user_email}/reset```
+
+```json
+{
+    "oldPassword": "[old password]",
+    "newPassword": "[new password]"
+}
+```
+
+### 取得 Google 日曆授權 🚧 (施工中)
+
+```Required JWT```
+```GET /user/{user_email}/calendar```
+
+### Refresh ❌ (目前不可用)
+
+```Required JWT```
+```POST /refresh/```
+
+### Test (測試用)
+
+```GET /hello/```
+
+### List User's Project
+
+list user's project
+
+```GET /user/{user_email}/project/```
+
+### Create Project
+
+```Required JWT```
+```POST /user/{user_email}/project/```
+
+```json
+{
+    "name": "[project name]",
+    "devTools": [],
+    "devMode": "[waterfall|scrum]"
+}
+```
+
+### Delete Project
+
+```Required JWT```
+```DELETE /user/{user_email}/project/{project_id}/```
+
+### List All repos
+
+```Required JWT```
+```GET /user/{user_email}/project/{project_id}/repo/```
+
+### Add Repo
+
+```Required JWT```
+```POST /user/{user_email}/project/{project_id}/repo/```
+
+```json
+{
+    "name": "[repo name]",
+    "url": "[repo url]"
+}
+```
+
+### Update Repo 🚧 (施工中)
+
+```Required JWT```
+```PUT /user/{user_email}/project/{project_id}/repo/{repo_id}/```
+
+```json
+{
+    "name": "[repo name]",
+    "url": "[repo url]"
+}
+```
+
+### Delete Repo 🚧 (施工中)
+
+```Required JWT```
+```DELETE /user/{user_email}/project/{project_id}/repo/{repo_id}/```
+
+### Create Kanban ❌ (目前不可用)
+
+```Required JWT```
+```POST /user/{user_email}/project/{project_id}/kanban/```
+
+### List Workflow
+
+```Required JWT```
+```GET /user/{user_email}/project/{project_id}/kanban/```
+
+### Create Workflow
+
+```Required JWT```
+```PUT /user/{user_email}/project/{project_id}/kanban/```
+
+```json
+{
+    "name": "[workflow name]"
+}
+```
+
+### Delete Workflow 🚧 (施工中)
+
+```Required JWT```
+```DELETE /user/{user_email}/project/{project_id}/kanban/{workflow_id}/```
+
+### Add Task 🚧 (施工中)
+
+```Required JWT```
+```POST /user/{user_email}/project/{project_id}/kanban/```
+
+```json
+{
+    "name": "[task name]",
+    "description": "[task description]"
+}
+```
+
+### Delete Task 🚧 (施工中)
+
+```Required JWT```
+```DELETE /user/{user_email}/project/{project_id}/kanban/{workflow_id}/{task_id}/```
+
+### Get Members 🚧 (施工中)
+
+```Required JWT```
+```GET /user/{user_email}/project/{project_id}/member/```
+
+### Add Member 🚧 (施工中)
+
+```Required JWT```
+```POST /user/{user_email}/project/{project_id}/member/```
+
+```json
+{
+    "email": "[member email]"
+}
+```
+
+### Delete Member 🚧 (施工中)
+
+```Required JWT```
+```DELETE /user/{user_email}/project/{project_id}/member/{member_email}/```
+
+### Get Document 🚧 (施工中)
+
+```Required JWT```
+```GET /user/{user_email}/project/{project_id}/doc/```
+
+### Add Document 🚧 (施工中)
+
+```Required JWT```
+```POST /user/{user_email}/project/{project_id}/doc/```
+
+```json
+{
+    "name": "[doc name]",
+    "content": "[doc content]"
+}
+```
+
+### Update Document 🚧 (施工中)
+
+```Required JWT```
+```PUT /user/{user_email}/project/{project_id}/doc/{doc_id}/```
+
+```json
+{
+    "name": "[doc name]",
+    "content": "[doc content]"
+}
+```
+
+### Delete Document 🚧 (施工中)
+
+```Required JWT```
+```DELETE /user/{user_email}/project/{project_id}/doc/{doc_id}/```
 
 ### firebase
 
