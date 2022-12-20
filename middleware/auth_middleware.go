@@ -3,7 +3,6 @@ package middleware
 import (
 	"backend/database"
 	"backend/model"
-	"context"
 	"log"
 	"net/http"
 	"time"
@@ -80,10 +79,12 @@ func MemberCheck() gin.HandlerFunc {
 		token, _ := AuthMiddleware.ParseToken(c)
 		claims := jwt.ExtractClaimsFromToken(token)
 		email := claims[IdentityKey].(string)
-		project_id := c.Param("project_id")
-		// log.Println(project_id)
-		dsnap, err := database.Client.Collection("projects").
-			Doc(project_id).Get(context.Background())
+
+		project_name := c.Param("project_name")
+		project_author := c.Param("user_email")
+
+		res, err := database.GetProjectDetail(project_author, project_name)
+
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"status":  "Internal Server Error",
@@ -91,16 +92,17 @@ func MemberCheck() gin.HandlerFunc {
 			})
 			c.Abort()
 		}
-		m := dsnap.Data()["Members"].([]interface{})
-		for _, member := range m {
-			if member.(string) == email {
+
+		for _, member := range res.Data()["members"].([]interface{}) {
+			if member == email {
 				c.Next()
 				return
 			}
 		}
+
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"status":  "Unauthorized",
-			"message": "Unauthorized",
+			"message": "You are not the member of this project",
 		})
 		c.Abort()
 	}

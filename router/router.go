@@ -21,7 +21,7 @@ func AddAuthRouter(auth_router *gin.RouterGroup) {
 func AddProjectRouter(project_router *gin.RouterGroup) {
 	project_router.GET("/", service.ListAllProjects)
 	project_router.GET("/:project_name/", service.GetProject)
-	project_router.Use(middleware.AuthMiddleware.MiddlewareFunc())
+	project_router.Use(middleware.MemberCheck())
 	{
 		project_router.PUT("/:project_name/", service.UpdateProject)
 		project_router.POST("/:project_name/member/", service.AddMember)
