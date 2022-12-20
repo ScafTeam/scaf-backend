@@ -87,7 +87,6 @@ func UserForgotPassword(c *gin.Context) {
 		return
 	}
 
-	c.BindJSON(&req)
 	res := auth.ForgotPassword(req.Email)
 	if res.Status() {
 		log.Println("Email is sent")
