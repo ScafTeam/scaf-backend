@@ -22,7 +22,7 @@ serviceAccount.json: https://sharma-vikashkr.medium.com/firebase-how-to-setup-a-
 
 ## RESTful API
 
-⚠️ **注意** ⚠️: 網址前綴為 `{app url}:{app port}`，最後面一定要 `/` 結尾。
+⚠️ **注意** ⚠️: 網址前綴為 `{app url}:{app port}`，最後面一定要 `/` 結尾。  
 ⚠️ **注意** ⚠️: 所有欄位名稱首字母為小寫。
 
 ### SignIn
