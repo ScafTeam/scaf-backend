@@ -48,7 +48,7 @@ Request:
 }
 ```
 
-### Forgot Password 🚧 (施工中)
+### Forgot Password
 
 ```POST /forgot/```
 
