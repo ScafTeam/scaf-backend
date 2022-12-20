@@ -77,7 +77,7 @@ func SetupAuthMiddleware(server *gin.Engine) {
 
 func MemberCheck() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token, err := AuthMiddleware.ParseToken(c)
+		token, _ := AuthMiddleware.ParseToken(c)
 		claims := jwt.ExtractClaimsFromToken(token)
 		email := claims[IdentityKey].(string)
 		project_id := c.Param("project_id")
