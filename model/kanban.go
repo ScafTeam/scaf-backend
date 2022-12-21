@@ -28,19 +28,19 @@ type AddTaskRequest struct {
 }
 
 type UpdateTaskRequest struct {
+	TaskId      string `json:"id" binding:"required"`
 	WorkflowId  string `json:"workflowId" binding:"required"`
-	TaskId      string `json:"taskId" binding:"required"`
 	Name        string `json:"name" binding:"required"`
 	Description string `json:"description"`
 }
 
 type MoveTaskRequest struct {
+	TaskId        string `json:"id" binding:"required"`
 	WorkflowId    string `json:"workflowId" binding:"required"`
-	TaskId        string `json:"taskId" binding:"required"`
 	NewWorkflowId string `json:"newWorkflowId" binding:"required"`
 }
 
 type DeleteTaskRequest struct {
+	TaskId     string `json:"id" binding:"required"`
 	WorkflowId string `json:"workflowId" binding:"required"`
-	TaskId     string `json:"taskId" binding:"required"`
 }

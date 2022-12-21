@@ -51,11 +51,15 @@ func Init(server *gin.Engine) {
 
 		kanban_member_router := kanban_router.Use(middleware.MemberCheck())
 		{
-			// kanban_member_router.GET("/", service.GetKanban)
-			// kanban_member_router.POST("/", service.CreateKanban)
 			kanban_member_router.PUT("/", service.AddWorkFlow)
-			kanban_member_router.POST("/", service.AddTask)
-			kanban_member_router.DELETE("/:workflow_name/:task_id/", service.DeleteTask)
+
+			task_member_router := kanban_router.Group("/task")
+			{
+				task_member_router.POST("/", service.AddTask)
+				task_member_router.PUT("/", service.UpdateTask)
+				task_member_router.PATCH("/", service.MoveTask)
+				task_member_router.DELETE("/", service.DeleteTask)
+			}
 		}
 	}
 }

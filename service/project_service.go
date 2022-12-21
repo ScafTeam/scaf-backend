@@ -135,7 +135,7 @@ func CreateProject(c *gin.Context) {
 
 	_, err = database.Client.
 		Doc("kanbans/"+project_uuid).
-		Set(context.Background(), createKanban(c))
+		Set(context.Background(), createKanban(c, project_uuid))
 
 	if err != nil {
 		log.Printf("An error has occurred: %s", err)
