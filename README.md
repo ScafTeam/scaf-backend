@@ -298,12 +298,12 @@ list user's project
 }
 ```
 
-### Get Document 🚧 (施工中)
+### Get Document
 
 ```Required JWT```  
 ```GET /user/{user_email}/project/{project_name}/doc/```
 
-### Add Document 🚧 (施工中)
+### Add Document
 
 ```Required JWT```  
 ```POST /user/{user_email}/project/{project_name}/doc/```
@@ -315,7 +315,7 @@ list user's project
 }
 ```
 
-### Update Document 🚧 (施工中)
+### Update Document
 
 ```Required JWT```  
 ```PUT /user/{user_email}/project/{project_name}/doc/{doc_id}/```
@@ -327,7 +327,7 @@ list user's project
 }
 ```
 
-### Delete Document 🚧 (施工中)
+### Delete Document
 
 ```Required JWT```  
 ```DELETE /user/{user_email}/project/{project_name}/doc/{doc_id}/```
