@@ -14,6 +14,7 @@ type Project struct {
 }
 
 type Repo struct {
+	Id   string `json:"id"`
 	Name string `json:"name"`
 	Url  string `json:"url"`
 }
@@ -26,6 +27,21 @@ type CreateProjectRequest struct {
 
 type AddMemberRequest struct {
 	Email string `json:"email" binding:"email"`
+}
+
+type AddRepoRequest struct {
+	Name string `json:"name" binding:"required"`
+	Url  string `json:"url" binding:"required"`
+}
+
+type UpdateRepoRequest struct {
+	Id   string `json:"id" binding:"required"`
+	Name string `json:"name" binding:"required"`
+	Url  string `json:"url" binding:"required"`
+}
+
+type DeleteRepoRequest struct {
+	Id string `json:"id" binding:"required"`
 }
 
 func CheckProjectName(name string) bool {

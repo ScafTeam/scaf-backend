@@ -40,8 +40,9 @@ func Init(server *gin.Engine) {
 
 		repo_member_router := repo_router.Use(middleware.MemberCheck())
 		{
-			// repo_member_router.GET("/:repo_name/", service.GetRepo)
-			repo_member_router.POST(" /", service.CreateRepo)
+			repo_member_router.POST("/", service.AddRepo)
+			repo_member_router.PUT("/", service.UpdateRepo)
+			repo_member_router.DELETE("/", service.DeleteRepo)
 		}
 	}
 

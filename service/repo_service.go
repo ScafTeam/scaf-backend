@@ -6,21 +6,27 @@ import (
 	"context"
 	"net/http"
 
-	"log"
-
 	"cloud.google.com/go/firestore"
 	"github.com/gin-gonic/gin"
+	"github.com/lithammer/shortuuid"
 )
 
-func CreateRepo(c *gin.Context) {
-	log.Println("add repo")
-	req := make(map[string]interface{})
-	c.BindJSON(&req)
-	project_id := c.Param("project_id")
+func AddRepo(c *gin.Context) {
+	var req model.AddRepoRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  "BadRequst",
+			"message": err.Error(),
+		})
+		return
+	}
 
-	repo := model.Repo{
-		Name: req["Name"].(string),
-		Url:  req["Url"].(string),
+	project_id := getProjectId(c)
+
+	repo := map[string]interface{}{
+		"id":   shortuuid.New(),
+		"name": req.Name,
+		"url":  req.Url,
 	}
 
 	_, err := database.Client.
@@ -28,42 +34,144 @@ func CreateRepo(c *gin.Context) {
 		Doc(project_id).
 		Update(context.Background(), []firestore.Update{
 			{
-				Path:  "Repos",
+				Path:  "repos",
 				Value: firestore.ArrayUnion(repo),
 			},
 		})
+
 	if err != nil {
-		log.Printf("An error has occurred: %s", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
+			"status":  "Internal Server Error",
 			"message": err,
 		})
+		return
 	}
+
 	c.JSON(http.StatusCreated, gin.H{
-		"message": "add repo",
+		"id":      repo["id"],
+		"status":  "OK",
+		"message": "Add Repo " + req.Name + " success",
+	})
+}
+
+func UpdateRepo(c *gin.Context) {
+	var req model.UpdateRepoRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  "BadRequst",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	dsnap := getProjectDetail(c)
+	var project model.Project
+	dsnap.DataTo(&project)
+
+	repos := project.Repos
+
+	var hasRepo bool
+	for i, repo := range repos {
+		if repo.Id == req.Id {
+			hasRepo = true
+			repos[i].Name = req.Name
+			repos[i].Url = req.Url
+		}
+	}
+
+	if !hasRepo {
+		c.JSON(http.StatusNotFound, gin.H{
+			"status":  "Not Found",
+			"message": "Repo not found",
+		})
+		return
+	}
+
+	_, err := database.Client.
+		Doc("projects/"+dsnap.Ref.ID).
+		Update(context.Background(), []firestore.Update{
+			{
+				Path:  "repos",
+				Value: repos,
+			},
+		})
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status":  "Internal Server Error",
+			"message": err,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status":  "OK",
+		"message": "Update repo " + req.Name + " success",
+	})
+}
+
+func DeleteRepo(c *gin.Context) {
+	var req model.DeleteRepoRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  "BadRequst",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	dsnap := getProjectDetail(c)
+	var project model.Project
+	dsnap.DataTo(&project)
+
+	repos := project.Repos
+
+	var hasRepo bool
+	for i, repo := range repos {
+		if repo.Id == req.Id {
+			hasRepo = true
+			repos = append(repos[:i], repos[i+1:]...)
+		}
+	}
+
+	if !hasRepo {
+		c.JSON(http.StatusNotFound, gin.H{
+			"status":  "Not Found",
+			"message": "Repo not found",
+		})
+		return
+	}
+
+	_, err := database.Client.
+		Doc("projects/"+dsnap.Ref.ID).
+		Update(context.Background(), []firestore.Update{
+			{
+				Path:  "repos",
+				Value: repos,
+			},
+		})
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status":  "Internal Server Error",
+			"message": err,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status":  "OK",
+		"message": "Delete repo success",
 	})
 }
 
 func ListAllRepos(c *gin.Context) {
-	project_id := c.Param("project_id")
-	log.Println("list all repos")
-
-	req := make(map[string]interface{})
-	c.BindJSON(&req)
-
-	dsnap, err := database.Client.
-		Doc("projects/" + project_id).
-		Get(context.Background())
-
-	if err != nil {
-		log.Printf("An error has occurred: %s", err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": err,
-		})
-	}
-
-	repos := dsnap.Data()["Repos"].([]interface{})
+	dsnap := getProjectDetail(c)
+	repos := dsnap.Data()["repos"].([]interface{})
 
 	c.JSON(http.StatusOK, gin.H{
-		"repos": repos,
+		"status":  "OK",
+		"message": "List all repos",
+		"repos":   repos,
 	})
 }
