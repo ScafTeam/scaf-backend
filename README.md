@@ -200,7 +200,7 @@ list user's project
 ### Add Workflow
 
 ```Required JWT```  
-```PUT /user/{user_email}/project/{project_name}/kanban/```
+```POST /user/{user_email}/project/{project_name}/kanban/```
 
 ```json
 {
@@ -208,7 +208,19 @@ list user's project
 }
 ```
 
-### Delete Workflow 🚧 (施工中)
+### Update Workflow
+
+```Required JWT```  
+```PUT /user/{user_email}/project/{project_name}/kanban/```
+
+```json
+{
+    "id": "[workflow ID]",
+    "name": "[workflow name]"
+}
+```
+
+### Delete Workflow
 
 ```Required JWT```  
 ```DELETE /user/{user_email}/project/{project_name}/kanban/```
