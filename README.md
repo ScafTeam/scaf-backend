@@ -146,12 +146,12 @@ list user's project
 ```Required JWT```  
 ```DELETE /user/{user_email}/project/{project_name}/```
 
-### List All repos 🚧 (施工中)
+### List All repos
 
 ```Required JWT```  
 ```GET /user/{user_email}/project/{project_name}/repo/```
 
-### Add Repo 🚧 (施工中)
+### Add Repo
 
 ```Required JWT```  
 ```POST /user/{user_email}/project/{project_name}/repo/```
@@ -163,22 +163,29 @@ list user's project
 }
 ```
 
-### Update Repo 🚧 (施工中)
+### Update Repo
 
 ```Required JWT```  
-```PUT /user/{user_email}/project/{project_name}/repo/{repo_id}/```
+```PUT /user/{user_email}/project/{project_name}/repo/```
 
 ```json
 {
+    "id": "[repo id]",
     "name": "[repo name]",
     "url": "[repo url]"
 }
 ```
 
-### Delete Repo 🚧 (施工中) 
+### Delete Repo 
 
 ```Required JWT```  
-```DELETE /user/{user_email}/project/{project_name}/repo/{repo_id}/```
+```DELETE /user/{user_email}/project/{project_name}/repo/```
+
+```json
+{
+    "id": "[repo id]"
+}
+```
 
 ### Create Kanban ❌ (目前不可用)
 
