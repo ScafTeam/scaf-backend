@@ -135,23 +135,7 @@ func CreateProject(c *gin.Context) {
 
 	_, err = database.Client.
 		Doc("kanbans/"+project_uuid).
-		Set(context.Background(), map[string]interface{}{
-			"projectId": project_uuid,
-			"workflows": []model.Workflow{
-				{
-					Name:  "Todo",
-					Tasks: []model.Task{},
-				},
-				{
-					Name:  "InProgress",
-					Tasks: []model.Task{},
-				},
-				{
-					Name:  "Done",
-					Tasks: []model.Task{},
-				},
-			},
-		})
+		Set(context.Background(), createKanban(c))
 
 	if err != nil {
 		log.Printf("An error has occurred: %s", err)
@@ -292,6 +276,18 @@ func DeleteProject(c *gin.Context) {
 
 	_, err = database.Client.
 		Doc("projects/" + project_id).
+		Delete(context.Background())
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status":  "Internal Server Error",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	_, err = database.Client.
+		Doc("kanbans/" + project_id).
 		Delete(context.Background())
 
 	if err != nil {
