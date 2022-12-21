@@ -49,20 +49,26 @@ func Init(server *gin.Engine) {
 	}
 
 	kanban_router := project_router.Group("/:project_name/kanban")
+	kanban_router.Use(middleware.MemberCheck())
 	{
 		kanban_router.GET("/", service.ListAllKanbans)
+		kanban_router.PUT("/", service.AddWorkFlow)
 
-		kanban_member_router := kanban_router.Use(middleware.MemberCheck())
+		task_member_router := kanban_router.Group("/task")
 		{
-			kanban_member_router.PUT("/", service.AddWorkFlow)
-
-			task_member_router := kanban_router.Group("/task")
-			{
-				task_member_router.POST("/", service.AddTask)
-				task_member_router.PUT("/", service.UpdateTask)
-				task_member_router.PATCH("/", service.MoveTask)
-				task_member_router.DELETE("/", service.DeleteTask)
-			}
+			task_member_router.POST("/", service.AddTask)
+			task_member_router.PUT("/", service.UpdateTask)
+			task_member_router.PATCH("/", service.MoveTask)
+			task_member_router.DELETE("/", service.DeleteTask)
 		}
+	}
+
+	docs_router := project_router.Group("/:project_name/docs")
+	docs_router.Use(middleware.MemberCheck())
+	{
+		docs_router.GET("/", service.ListAllDocs)
+		docs_router.POST("/", service.AddDoc)
+		docs_router.PUT("/", service.UpdateDoc)
+		docs_router.DELETE("/", service.DeleteDoc)
 	}
 }

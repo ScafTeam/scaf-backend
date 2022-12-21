@@ -145,6 +145,20 @@ func CreateProject(c *gin.Context) {
 		})
 		return
 	}
+
+	_, err = database.Client.
+		Doc("docs/"+project_uuid).
+		Set(context.Background(), createDocs(c, project_uuid))
+
+	if err != nil {
+		log.Printf("An error has occurred: %s", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status":  "Internal Server Error",
+			"message": err.Error(),
+		})
+		return
+	}
+
 	c.JSON(http.StatusCreated, gin.H{
 		"status":  "Created",
 		"message": "project created",
@@ -288,6 +302,18 @@ func DeleteProject(c *gin.Context) {
 
 	_, err = database.Client.
 		Doc("kanbans/" + project_id).
+		Delete(context.Background())
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status":  "Internal Server Error",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	_, err = database.Client.
+		Doc("docs/" + project_id).
 		Delete(context.Background())
 
 	if err != nil {
