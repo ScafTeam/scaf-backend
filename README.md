@@ -375,14 +375,14 @@ list user's project
 - [x] 取得看板
 - [x] 新增看板任務(Todo, InProgress, Done)
 - [x] 刪除看板任務(Todo, InProgress, Done)
-- [ ] 編輯看板任務(Todo, InProgress, Done)
-- [ ] 邀請加入專案
+- [x] 編輯看板任務(Todo, InProgress, Done)
+- [x] 邀請加入專案
 - [ ] google日曆授權
 
 
 ## Refactor list
 
-- [ ] 將 Request model 
+- [x] 將 Request model 
 
 ## 測試案例
 
