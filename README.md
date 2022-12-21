@@ -66,14 +66,11 @@ Request:
 }
 ```
 
-### Get User Data 🚧 (施工中)
+### Get User Data
 
-```Required JWT```  
 ```GET /user/{user_email}/```
 
-user_email 可為空，為空代表自己。
-
-### Update User Data 🚧 (施工中)
+### Update User Data
 
 ```Required JWT```  
 ```PUT /user/{user_email}/```
@@ -81,12 +78,12 @@ user_email 可為空，為空代表自己。
 ```json
 {
     "avatar": "[avatar base64]",
+    "bio": "[bio]",
     "nickname": "[nickname]",
-    "password": "[password]"
 }
 ```
 
-### Update User Password 🚧 (施工中)
+### Update User Password
 
 ```Required JWT```  
 ```PUT /user/{user_email}/reset```
@@ -156,7 +153,6 @@ list user's project
 
 ### List All repos
 
-```Required JWT```  
 ```GET /user/{user_email}/project/{project_name}/repo/```
 
 ### Add Repo
