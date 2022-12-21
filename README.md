@@ -214,6 +214,7 @@ list user's project
 ```json
 {
     "name": "[task name]",
+    "workflow": "[workflow name]",
     "description": "[task description]"
 }
 ```
