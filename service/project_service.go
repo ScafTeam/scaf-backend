@@ -304,7 +304,19 @@ func DeleteProject(c *gin.Context) {
 	})
 }
 
-func AddMember(c *gin.Context) {
+func GetProjectMembers(c *gin.Context) {
+	dsnap := getProjectDetail(c)
+	var project model.Project
+	dsnap.DataTo(&project)
+
+	c.JSON(http.StatusOK, gin.H{
+		"status":  "OK",
+		"message": "Get project members successfully",
+		"members": project.Members,
+	})
+}
+
+func AddProjectMember(c *gin.Context) {
 	var req model.AddMemberRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -314,28 +326,29 @@ func AddMember(c *gin.Context) {
 		return
 	}
 
-	project_author := c.Param("user_email")
-	project_name := c.Param("project_name")
-
-	res, err := database.GetProjectDetail(project_author, project_name)
-
+	// Check if user exists
+	_, err := database.GetUser(req.Email)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status":  "Internal Server Error",
-			"message": err.Error(),
-		})
-		return
-	}
-
-	if res == nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"status":  "Not Found",
-			"message": "Project not found",
+			"message": "User not found",
 		})
 		return
 	}
 
-	project_id := res.Ref.ID
+	dsnap := getProjectDetail(c)
+	project_id := dsnap.Ref.ID
+
+	// Check if user is already a member
+	for _, member := range dsnap.Data()["members"].([]interface{}) {
+		if member == req.Email {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"status":  "Bad Request",
+				"message": "User is already a member",
+			})
+			return
+		}
+	}
 
 	_, err = database.Client.
 		Doc("projects/"+project_id).
@@ -347,15 +360,62 @@ func AddMember(c *gin.Context) {
 		})
 
 	if err != nil {
-		log.Printf("An error has occurred: %s", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"status":  "Internal Server Error",
 			"message": err.Error(),
 		})
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"status":  "OK",
-		"message": "member added",
+		"message": "Member " + req.Email + " added",
+	})
+}
+
+func DeleteProjectMember(c *gin.Context) {
+	var req model.DeleteMemberRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  "Bad Request",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	dsnap := getProjectDetail(c)
+	project_id := dsnap.Ref.ID
+
+	// Check if user is a member
+	for _, member := range dsnap.Data()["members"].([]interface{}) {
+		if member == req.Email {
+			_, err := database.Client.
+				Doc("projects/"+project_id).
+				Update(context.Background(), []firestore.Update{
+					{
+						Path:  "members",
+						Value: firestore.ArrayRemove(req.Email),
+					},
+				})
+
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"status":  "Internal Server Error",
+					"message": err.Error(),
+				})
+				return
+			}
+
+			c.JSON(http.StatusOK, gin.H{
+				"status":  "OK",
+				"message": "Member " + req.Email + " removed",
+			})
+			return
+		}
+	}
+
+	c.JSON(http.StatusBadRequest, gin.H{
+		"status":  "Bad Request",
+		"message": "User is not a member",
 	})
 }

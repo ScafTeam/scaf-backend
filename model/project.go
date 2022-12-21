@@ -29,6 +29,10 @@ type AddMemberRequest struct {
 	Email string `json:"email" binding:"email"`
 }
 
+type DeleteMemberRequest struct {
+	Email string `json:"email" binding:"email"`
+}
+
 type AddRepoRequest struct {
 	Name string `json:"name" binding:"required"`
 	Url  string `json:"url" binding:"required"`

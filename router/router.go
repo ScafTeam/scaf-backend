@@ -24,7 +24,9 @@ func Init(server *gin.Engine) {
 		project_member_router := server.Group("/user/:user_email/project/").Use(middleware.MemberCheck())
 		{
 			project_member_router.PUT("/:project_name/", service.UpdateProject)
-			project_member_router.POST("/:project_name/member/", service.AddMember)
+			project_member_router.GET("/:project_name/member/", service.GetProjectMembers)
+			project_member_router.POST("/:project_name/member/", service.AddProjectMember)
+			project_member_router.DELETE("/:project_name/member/", service.DeleteProjectMember)
 		}
 
 		project_owner_router := server.Group("/user/:user_email/project/").Use(middleware.OwnerCheck())
