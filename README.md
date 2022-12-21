@@ -185,12 +185,12 @@ list user's project
 ```Required JWT```  
 ```POST /user/{user_email}/project/{project_name}/kanban/```
 
-### List Workflow 🚧 (施工中)
+### List Workflow
 
 ```Required JWT```  
 ```GET /user/{user_email}/project/{project_name}/kanban/```
 
-### Create Workflow 🚧 (施工中)
+### Add Workflow
 
 ```Required JWT```  
 ```PUT /user/{user_email}/project/{project_name}/kanban/```
@@ -204,25 +204,65 @@ list user's project
 ### Delete Workflow 🚧 (施工中)
 
 ```Required JWT```  
-```DELETE /user/{user_email}/project/{project_name}/kanban/{workflow_id}/```
+```DELETE /user/{user_email}/project/{project_name}/kanban/```
 
-### Add Task 🚧 (施工中)
+```json
+{
+    "id": "[workflow ID]"
+}
+```
+
+### Add Task
 
 ```Required JWT```  
-```POST /user/{user_email}/project/{project_name}/kanban/```
+```POST /user/{user_email}/project/{project_name}/kanban/task/```
 
 ```json
 {
     "name": "[task name]",
-    "workflow": "[workflow name]",
+    "workflowId": "[workflow ID]",
     "description": "[task description]"
 }
 ```
 
-### Delete Task 🚧 (施工中)
+### Update Task
 
 ```Required JWT```  
-```DELETE /user/{user_email}/project/{project_name}/kanban/{workflow_id}/{task_id}/```
+```PUT /user/{user_email}/project/{project_name}/kanban/task/```
+
+```json
+{
+    "id": "[task ID]",
+    "workflowId": "[workflow ID]",
+    "name": "[task name]",
+    "description": "[task description]"
+}
+```
+
+### Move Task
+
+```Required JWT```  
+```PATCH /user/{user_email}/project/{project_name}/kanban/task/```
+
+```json
+{
+    "id": "[task ID]",
+    "workflowId": "[workflow ID]",
+    "newWorkflowId": "[new workflow ID]"
+}
+```
+
+### Delete Task
+
+```Required JWT```  
+```DELETE /user/{user_email}/project/{project_name}/kanban/task/```
+
+```json
+{
+    "id": "[task ID]",
+    "workflowId": "[workflow ID]"
+}
+```
 
 ### Get Members 🚧 (施工中)
 
