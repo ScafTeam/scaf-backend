@@ -3,8 +3,10 @@ package middleware
 import (
 	"backend/database"
 	"backend/model"
+	"bufio"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/ScafTeam/firebase-go-client/auth"
@@ -15,12 +17,26 @@ import (
 var IdentityKey = "id"
 var AuthMiddleware *jwt.GinJWTMiddleware
 
+func readConfig() string {
+	file, err := os.Open("middleware/key.txt")
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	scanner.Scan()
+	key := scanner.Text()
+	return key
+}
+
 func SetupAuthMiddleware(server *gin.Engine) {
 	var err error
+	key := readConfig()
 	AuthMiddleware, err = jwt.New(&jwt.GinJWTMiddleware{
-		Realm:            "test zone",   //标识
-		SigningAlgorithm: "HS256",       //加密算法
-		Key:              []byte("111"), //密钥
+		Realm:            "test zone", //标识
+		SigningAlgorithm: "HS256",     //加密算法
+		Key:              []byte(key), //密钥
 		Timeout:          36 * time.Hour,
 		MaxRefresh:       time.Hour,   //刷新最大延长时间
 		IdentityKey:      IdentityKey, //指定cookie的id

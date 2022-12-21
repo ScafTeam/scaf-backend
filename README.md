@@ -14,11 +14,19 @@ Web API Key: 專案設定內查看<br>
 firbase project id: 專案設定內查看<br>
 serviceAccount.json: https://sharma-vikashkr.medium.com/firebase-how-to-setup-a-firebase-service-account--6a70bb6646
 
-- **config.txt**
+### **database/config.txt**
+
 ```
 {WEB KEY API}
 {PROJECT ID}
 ```
+
+### **middleware/key.txt**
+
+```
+{JWT KEY}
+``
+
 
 ## RESTful API
 
