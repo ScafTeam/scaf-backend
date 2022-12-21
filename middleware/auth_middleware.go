@@ -93,8 +93,6 @@ func MemberCheck() gin.HandlerFunc {
 			c.Abort()
 		}
 
-		log.Println("What?")
-
 		if res == nil {
 			c.JSON(http.StatusNotFound, gin.H{
 				"status":  "Not Found",
@@ -140,7 +138,7 @@ func OwnerCheck() gin.HandlerFunc {
 			})
 			c.Abort()
 		}
-		c.Abort()
+		c.Next()
 	}
 }
 
