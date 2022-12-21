@@ -271,7 +271,7 @@ list user's project
 }
 ```
 
-### Get Members 🚧 (施工中)
+### Get Members
 
 ```Required JWT```  
 ```GET /user/{user_email}/project/{project_name}/member/```
@@ -287,10 +287,16 @@ list user's project
 }
 ```
 
-### Delete Member 🚧 (施工中)
+### Delete Member
 
 ```Required JWT```  
-```DELETE /user/{user_email}/project/{project_name}/member/{member_email}/```
+```DELETE /user/{user_email}/project/{project_name}/member/```
+
+```json
+{
+    "email": "[member email]"
+}
+```
 
 ### Get Document 🚧 (施工中)
 
