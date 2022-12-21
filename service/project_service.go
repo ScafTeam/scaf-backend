@@ -159,6 +159,10 @@ func CreateProject(c *gin.Context) {
 		return
 	}
 
+	if !addUserProjects(c, userEmail, userEmail+"/"+req.Name) {
+		return
+	}
+
 	c.JSON(http.StatusCreated, gin.H{
 		"status":  "Created",
 		"message": "project created",
@@ -266,29 +270,24 @@ func UpdateProject(c *gin.Context) {
 }
 
 func DeleteProject(c *gin.Context) {
-	project_author := c.Param("user_email")
-	project_name := c.Param("project_name")
+	dsnap := getProjectDetail(c)
 
-	res, err := database.GetProjectDetail(project_author, project_name)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status":  "Internal Server Error",
-			"message": err.Error(),
-		})
+	if dsnap == nil {
 		return
 	}
 
-	if res == nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"status":  "Not Found",
-			"message": "Project not found",
-		})
-		return
+	var project model.Project
+	dsnap.DataTo(&project)
+
+	for _, user := range project.Members {
+		if !removeUserProjects(c, user, project.Author+"/"+project.Name) {
+			return
+		}
 	}
 
-	project_id := res.Ref.ID
+	project_id := dsnap.Ref.ID
 
-	_, err = database.Client.
+	_, err := database.Client.
 		Doc("projects/" + project_id).
 		Delete(context.Background())
 
@@ -390,6 +389,15 @@ func AddProjectMember(c *gin.Context) {
 			"status":  "Internal Server Error",
 			"message": err.Error(),
 		})
+		return
+	}
+
+	// Add project to user's projects
+	userEmail := req.Email
+	author := c.Param("user_email")
+	project_name := c.Param("project_name")
+
+	if !addUserProjects(c, userEmail, author+"/"+project_name) {
 		return
 	}
 

@@ -16,6 +16,18 @@ func Init(server *gin.Engine) {
 		auth_router.POST("/refresh/", middleware.AuthMiddleware.RefreshHandler)
 	}
 
+	user_router := server.Group("/user/:user_email")
+	{
+		user_router.GET("/", service.GetUserData)
+
+		user_router.Use(middleware.AuthMiddleware.MiddlewareFunc())
+		user_router.Use(middleware.OwnerCheck())
+		{
+			user_router.PUT("/", service.UpdateUserData)
+			user_router.PUT("/reset/", service.UpdateUserPassword)
+		}
+	}
+
 	project_router := server.Group("/user/:user_email/project")
 	{
 		project_router.GET("/", service.ListAllProjects)
