@@ -93,6 +93,18 @@ func MemberCheck() gin.HandlerFunc {
 			c.Abort()
 		}
 
+		log.Println("What?")
+
+		if res == nil {
+			c.JSON(http.StatusNotFound, gin.H{
+				"status":  "Not Found",
+				"message": "Project not found",
+				"debug":   project_author + "/" + project_name,
+			})
+			c.Abort()
+			return
+		}
+
 		for _, member := range res.Data()["members"].([]interface{}) {
 			if member == email {
 				c.Next()
@@ -108,7 +120,7 @@ func MemberCheck() gin.HandlerFunc {
 	}
 }
 
-func AuthCheck() gin.HandlerFunc {
+func OwnerCheck() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token, err := AuthMiddleware.ParseToken(c)
 		if err != nil {
@@ -128,7 +140,7 @@ func AuthCheck() gin.HandlerFunc {
 			})
 			c.Abort()
 		}
-		c.Next()
+		c.Abort()
 	}
 }
 
