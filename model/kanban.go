@@ -21,6 +21,15 @@ type AddWorkFlowRequest struct {
 	WorkflowName string `json:"name" binding:"required"`
 }
 
+type UpdateWorkFlowRequest struct {
+	Id   string `json:"id" binding:"required"`
+	Name string `json:"name" binding:"required"`
+}
+
+type DeleteWorkFlowRequest struct {
+	Id string `json:"id" binding:"required"`
+}
+
 type AddTaskRequest struct {
 	WorkflowId  string `json:"workflowId" binding:"required"`
 	Name        string `json:"name" binding:"required"`

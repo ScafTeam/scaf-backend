@@ -107,8 +107,91 @@ func AddWorkFlow(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, gin.H{
+		"id":      new_workflow_id,
 		"status":  "Created",
-		"message": "Add workflow success",
+		"message": "Add workflow " + req.WorkflowName + " success",
+	})
+}
+
+func UpdateWorkFlow(c *gin.Context) {
+	var req model.UpdateWorkFlowRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  "Bad Request",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	project_id := getProjectId(c)
+	workflow, ok := findWorkFlowById(c, project_id, req.Id)
+
+	if !ok {
+		return
+	}
+
+	workflow.Name = req.Name
+
+	_, err := database.Client.
+		Doc("kanbans/"+project_id).
+		Update(context.Background(), []firestore.Update{
+			{
+				Path:  "workflows." + req.Id,
+				Value: workflow,
+			},
+		})
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status":  "Internal Server Error",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status":  "OK",
+		"message": "Update " + workflow.Name + " Success",
+	})
+}
+
+func DeleteWorkFlow(c *gin.Context) {
+	var req model.DeleteWorkFlowRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  "Bad Request",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	project_id := getProjectId(c)
+	workflow, ok := findWorkFlowById(c, project_id, req.Id)
+
+	if !ok {
+		return
+	}
+
+	_, err := database.Client.
+		Doc("kanbans/"+project_id).
+		Update(context.Background(), []firestore.Update{
+			{
+				Path:  "workflows." + req.Id,
+				Value: firestore.Delete,
+			},
+		})
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status":  "Internal Server Error",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status":  "OK",
+		"message": "Delete " + workflow.Name + " Success",
 	})
 }
 
@@ -126,7 +209,11 @@ func AddTask(c *gin.Context) {
 	}
 
 	// check workflow_Id in firebase kanbans
-	workflow := findWorkFlowById(c, project_id, req.WorkflowId)
+	workflow, ok := findWorkFlowById(c, project_id, req.WorkflowId)
+
+	if !ok {
+		return
+	}
 
 	task := model.Task{
 		Id:          task_id,
@@ -172,7 +259,11 @@ func UpdateTask(c *gin.Context) {
 	}
 
 	// check workflow_Id in firebase kanbans
-	workflow := findWorkFlowById(c, project_id, req.WorkflowId)
+	workflow, ok := findWorkFlowById(c, project_id, req.WorkflowId)
+
+	if !ok {
+		return
+	}
 
 	var hasTask bool
 	var new_tasks []model.Task
@@ -231,7 +322,11 @@ func MoveTask(c *gin.Context) {
 	}
 
 	// check workflow_Id in firebase kanbans
-	workflow := findWorkFlowById(c, project_id, req.WorkflowId)
+	workflow, ok := findWorkFlowById(c, project_id, req.WorkflowId)
+
+	if !ok {
+		return
+	}
 
 	var task *model.Task
 	var new_tasks []model.Task
@@ -252,7 +347,11 @@ func MoveTask(c *gin.Context) {
 	}
 
 	// check new_workflow_Id in firebase kanbans
-	new_workflow := findWorkFlowById(c, project_id, req.NewWorkflowId)
+	new_workflow, ok := findWorkFlowById(c, project_id, req.WorkflowId)
+
+	if !ok {
+		return
+	}
 
 	new_workflow.Tasks = append(new_workflow.Tasks, *task)
 
@@ -301,7 +400,11 @@ func DeleteTask(c *gin.Context) {
 	}
 
 	// check workflow_name in firebase kanbans
-	workflow := findWorkFlowById(c, project_id, req.WorkflowId)
+	workflow, ok := findWorkFlowById(c, project_id, req.WorkflowId)
+
+	if !ok {
+		return
+	}
 
 	var delete_task *model.Task
 	var new_tasks []model.Task
@@ -346,7 +449,7 @@ func DeleteTask(c *gin.Context) {
 	})
 }
 
-func findWorkFlowById(c *gin.Context, project_id, workflow_Id string) model.Workflow {
+func findWorkFlowById(c *gin.Context, project_id, workflow_Id string) (model.Workflow, bool) {
 	dsnap, err := database.Client.
 		Doc("kanbans/" + project_id).
 		Get(context.Background())
@@ -357,7 +460,7 @@ func findWorkFlowById(c *gin.Context, project_id, workflow_Id string) model.Work
 			"message": err.Error(),
 		})
 		c.Abort()
-		return model.Workflow{}
+		return model.Workflow{}, false
 	}
 
 	var kanban model.Kanban
@@ -371,7 +474,7 @@ func findWorkFlowById(c *gin.Context, project_id, workflow_Id string) model.Work
 			"message": "Workflow not found",
 		})
 		c.Abort()
-		return model.Workflow{}
+		return model.Workflow{}, false
 	}
-	return workflow
+	return workflow, true
 }

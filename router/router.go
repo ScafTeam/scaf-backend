@@ -52,7 +52,9 @@ func Init(server *gin.Engine) {
 	kanban_router.Use(middleware.MemberCheck())
 	{
 		kanban_router.GET("/", service.ListAllKanbans)
-		kanban_router.PUT("/", service.AddWorkFlow)
+		kanban_router.POST("/", service.AddWorkFlow)
+		kanban_router.PUT("/", service.UpdateWorkFlow)
+		kanban_router.DELETE("/", service.DeleteWorkFlow)
 
 		task_member_router := kanban_router.Group("/task")
 		{
