@@ -12,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func AddRepo(c *gin.Context) {
+func CreateRepo(c *gin.Context) {
 	log.Println("add repo")
 	req := make(map[string]interface{})
 	c.BindJSON(&req)
