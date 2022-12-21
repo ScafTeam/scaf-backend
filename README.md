@@ -310,7 +310,8 @@ list user's project
 
 ```json
 {
-    "name": "[doc name]",
+    "id": "[doc id]",
+    "title": "[doc title]",
     "content": "[doc content]"
 }
 ```
@@ -318,11 +319,12 @@ list user's project
 ### Update Document
 
 ```Required JWT```  
-```PUT /user/{user_email}/project/{project_name}/doc/{doc_id}/```
+```PUT /user/{user_email}/project/{project_name}/doc/```
 
 ```json
 {
-    "name": "[doc name]",
+    "id": "[doc id]",
+    "title": "[doc title]",
     "content": "[doc content]"
 }
 ```
@@ -330,7 +332,13 @@ list user's project
 ### Delete Document
 
 ```Required JWT```  
-```DELETE /user/{user_email}/project/{project_name}/doc/{doc_id}/```
+```DELETE /user/{user_email}/project/{project_name}/doc/```
+
+```json
+{
+    "id": "[doc id]"
+}
+```
 
 ### firebase
 
