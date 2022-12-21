@@ -54,3 +54,31 @@ func GetProjectDetail(user_email, project_name string) (*firestore.DocumentSnaps
 
 	return project, nil
 }
+
+// TODO
+func GetUser(user_email string) (*firestore.DocumentSnapshot, error) {
+	iter := Client.Collection("users").
+		Where("email", "==", user_email).
+		Documents(context.Background())
+
+	var userNum int
+	var user *firestore.DocumentSnapshot
+
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		userNum++
+		if err != nil {
+			return nil, err
+		}
+		user = doc
+	}
+
+	if userNum == 0 || userNum > 1 {
+		return nil, nil
+	}
+
+	return user, nil
+}
