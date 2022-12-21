@@ -25,7 +25,7 @@ serviceAccount.json: https://sharma-vikashkr.medium.com/firebase-how-to-setup-a-
 
 ```
 {JWT KEY}
-``
+```
 
 
 ## RESTful API
