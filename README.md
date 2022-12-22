@@ -326,7 +326,6 @@ list user's project
 
 ```json
 {
-    "id": "[doc id]",
     "title": "[doc title]",
     "content": "[doc content]"
 }
