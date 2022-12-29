@@ -3,9 +3,10 @@ package middleware
 import (
 	"backend/database"
 	"backend/model"
-	"context"
+	"bufio"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/ScafTeam/firebase-go-client/auth"
@@ -16,13 +17,27 @@ import (
 var IdentityKey = "id"
 var AuthMiddleware *jwt.GinJWTMiddleware
 
+func readConfig() string {
+	file, err := os.Open("middleware/key.txt")
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	scanner.Scan()
+	key := scanner.Text()
+	return key
+}
+
 func SetupAuthMiddleware(server *gin.Engine) {
 	var err error
+	key := readConfig()
 	AuthMiddleware, err = jwt.New(&jwt.GinJWTMiddleware{
-		Realm:            "test zone",   //标识
-		SigningAlgorithm: "HS256",       //加密算法
-		Key:              []byte("111"), //密钥
-		Timeout:          time.Hour,
+		Realm:            "test zone", //标识
+		SigningAlgorithm: "HS256",     //加密算法
+		Key:              []byte(key), //密钥
+		Timeout:          36 * time.Hour,
 		MaxRefresh:       time.Hour,   //刷新最大延长时间
 		IdentityKey:      IdentityKey, //指定cookie的id
 		SendCookie:       true,
@@ -57,7 +72,7 @@ func SetupAuthMiddleware(server *gin.Engine) {
 		},
 		LoginResponse: func(c *gin.Context, code int, token string, expire time.Time) { //登录成功时响应
 			c.JSON(http.StatusOK, gin.H{
-				"status":  "authorized",
+				"status":  "Authorized",
 				"token":   token,
 				"expire":  expire.Format(time.RFC3339),
 				"message": "Sign in success",
@@ -77,35 +92,49 @@ func SetupAuthMiddleware(server *gin.Engine) {
 
 func MemberCheck() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token, err := AuthMiddleware.ParseToken(c)
+		token, _ := AuthMiddleware.ParseToken(c)
 		claims := jwt.ExtractClaimsFromToken(token)
 		email := claims[IdentityKey].(string)
-		project_id := c.Param("project_id")
-		// log.Println(project_id)
-		dsnap, err := database.Client.Collection("projects").
-			Doc(project_id).Get(context.Background())
+
+		project_name := c.Param("project_name")
+		project_author := c.Param("user_email")
+
+		res, err := database.GetProjectDetail(project_author, project_name)
+
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"status":  "Internal Server Error",
 				"message": err.Error(),
 			})
+			c.Abort()
 		}
-		m := dsnap.Data()["Members"].([]interface{})
-		for _, member := range m {
-			if member.(string) == email {
+
+		if res == nil {
+			c.JSON(http.StatusNotFound, gin.H{
+				"status":  "Not Found",
+				"message": "Project not found",
+				"debug":   project_author + "/" + project_name,
+			})
+			c.Abort()
+			return
+		}
+
+		for _, member := range res.Data()["members"].([]interface{}) {
+			if member == email {
 				c.Next()
 				return
 			}
 		}
+
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"status":  "unauthorized",
-			"message": "Unauthorized",
+			"status":  "Unauthorized",
+			"message": "You are not the member of this project",
 		})
 		c.Abort()
 	}
 }
 
-func AuthCheck() gin.HandlerFunc {
+func OwnerCheck() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token, err := AuthMiddleware.ParseToken(c)
 		if err != nil {
@@ -120,8 +149,8 @@ func AuthCheck() gin.HandlerFunc {
 		url_email := c.Param("user_email")
 		if email != url_email {
 			c.JSON(http.StatusUnauthorized, gin.H{
-				"status":  "unauthorized",
-				"message": "Unauthorized",
+				"status":  "Unauthorized",
+				"message": "You are not the author of this project",
 			})
 			c.Abort()
 		}
@@ -130,9 +159,13 @@ func AuthCheck() gin.HandlerFunc {
 }
 
 func UserLogin(c *gin.Context) (interface{}, error) {
-	json := make(map[string]interface{})
-	c.BindJSON(&json)
-	res := auth.SignInWithEmailAndPassword(json["email"].(string), json["password"].(string))
+	var req model.UserLoginRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		log.Println(err)
+		return nil, jwt.ErrMissingLoginValues
+	}
+
+	res := auth.SignInWithEmailAndPassword(req.Email, req.Password)
 	if res.Status() {
 		user := res.Result()
 		scaf_user := model.ScafUser{

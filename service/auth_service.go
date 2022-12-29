@@ -4,68 +4,174 @@ import (
 	"backend/database"
 	"backend/model"
 	"context"
-	"encoding/json"
 	"log"
 	"net/http"
 
+	"cloud.google.com/go/firestore"
 	"github.com/ScafTeam/firebase-go-client/auth"
 	"github.com/gin-gonic/gin"
 )
 
 func UserRegister(c *gin.Context) {
-	context_json := make(map[string]interface{})
-	c.BindJSON(&context_json)
-	res := auth.SignUpWithEmailAndPassword(context_json["email"].(string), context_json["password"].(string))
+	var req model.UserRegisterRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  "BadRequst",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	res := auth.SignUpWithEmailAndPassword(req.Email, req.Password)
 	log.Println(res.Status())
 	if res.Status() {
-		user := res.Result()
-		scaf_user := model.ScafUser{
-			Email:    user.Email,
-			Projects: []string{},
+		// user := res.Result()
+		scaf_user := map[string]interface{}{
+			"email":    req.Email,
+			"avator":   "",
+			"bio":      "",
+			"nickname": "",
+			"projects": []string{},
 		}
 
-		jsonStr, err := json.Marshal(scaf_user)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": err,
-			})
-			return
-		}
-
-		var mapData map[string]interface{}
-		if err := json.Unmarshal(jsonStr, &mapData); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": err,
-			})
-		}
-		_, err = database.Client.
-			Doc("users/"+scaf_user.Email).
-			Set(context.Background(), mapData)
+		_, err := database.Client.
+			Doc("users/"+req.Email).
+			Set(context.Background(), scaf_user)
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": err,
+				"status":  "Internal Server Error",
+				"message": err.Error(),
 			})
 			return
 		}
 
 		c.JSON(http.StatusOK, gin.H{
-			"status":  "authorized",
+			"status":  "Authorized",
 			"message": "Sign up success",
 		})
+		return
 	} else {
-		log.Println(res.ErrorMessage())
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"status":  "unauthorized",
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  "BadRequst",
 			"message": res.ErrorMessage(),
+		})
+		return
+	}
+}
+
+func GetUserData(c *gin.Context) {
+	email := c.Param("user_email")
+
+	doc, err := database.Client.Doc("users/" + email).Get(context.Background())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status":  "Internal Server Error",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	var user model.ScafUser
+	doc.DataTo(&user)
+
+	c.JSON(http.StatusOK, gin.H{
+		"status": "OK",
+		"data":   user,
+	})
+}
+
+func UpdateUserData(c *gin.Context) {
+	var req model.UpdateUserRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  "BadRequst",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	email := c.Param("user_email")
+
+	_, err := database.Client.
+		Doc("users/"+email).
+		Update(context.Background(), []firestore.Update{
+			{
+				Path:  "avatar",
+				Value: req.Avatar,
+			},
+			{
+				Path:  "nickname",
+				Value: req.Nickname,
+			},
+			{
+				Path:  "bio",
+				Value: req.Bio,
+			},
+		})
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status":  "Internal Server Error",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status":  "OK",
+		"message": "Update user data success",
+	})
+}
+
+func UpdateUserPassword(c *gin.Context) {
+	var req model.UpdateUserPasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  "BadRequst",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	email := c.Param("user_email")
+
+	res := auth.SignInWithEmailAndPassword(email, req.OldPassword)
+	if !res.Status() {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"status":  "Unauthorized",
+			"message": res.ErrorMessage(),
+		})
+		return
+	}
+
+	user := res.Result()
+
+	res2 := auth.UpdatePassword(user, req.NewPassword)
+	if res2.Status() {
+		c.JSON(http.StatusOK, gin.H{
+			"status":  "OK",
+			"message": "Update password success",
+		})
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  "BadRequst",
+			"message": res2.ErrorMessage(),
 		})
 	}
 }
 
 func UserForgotPassword(c *gin.Context) {
-	json := make(map[string]interface{})
-	c.BindJSON(&json)
-	res := auth.ForgotPassword(json["email"].(string))
+	var req model.UserForgotPasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  "BadRequst",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	res := auth.ForgotPassword(req.Email)
 	if res.Status() {
 		log.Println("Email is sent")
 		log.Println(res)
@@ -77,8 +183,52 @@ func UserForgotPassword(c *gin.Context) {
 		// EMAIL_NOT_FOUND 沒有此用戶
 		log.Println(res.ErrorMessage())
 		c.JSON(http.StatusBadRequest, gin.H{
-			"status":  "eamil not found",
+			"status":  "Eamil Not Found",
 			"message": res.ErrorMessage(),
 		})
 	}
+}
+
+func addUserProjects(c *gin.Context, email, projectName string) bool {
+	_, err := database.Client.
+		Doc("users/"+email).
+		Update(context.Background(), []firestore.Update{
+			{
+				Path:  "projects",
+				Value: firestore.ArrayUnion(projectName),
+			},
+		})
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status":  "Internal Server Error",
+			"message": err.Error(),
+		})
+		c.Abort()
+		return false
+	}
+
+	return true
+}
+
+func removeUserProjects(c *gin.Context, email, projectName string) bool {
+	_, err := database.Client.
+		Doc("users/"+email).
+		Update(context.Background(), []firestore.Update{
+			{
+				Path:  "projects",
+				Value: firestore.ArrayRemove(projectName),
+			},
+		})
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status":  "Internal Server Error",
+			"message": err.Error(),
+		})
+		c.Abort()
+		return false
+	}
+
+	return true
 }
