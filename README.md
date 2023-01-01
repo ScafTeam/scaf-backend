@@ -14,6 +14,12 @@ Web API Key: 專案設定內查看<br>
 firbase project id: 專案設定內查看<br>
 serviceAccount.json: https://sharma-vikashkr.medium.com/firebase-how-to-setup-a-firebase-service-account--6a70bb6646
 
+### HotReload
+
+```bash
+gin -p 8081 -a 8000 run .
+```
+
 ### **database/config.txt**
 
 ```
