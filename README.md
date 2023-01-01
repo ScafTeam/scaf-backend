@@ -145,7 +145,6 @@ list user's project
 
 ```json
 {
-    "name": "[project name]",
     "devTools": [],
     "devMode": "[waterfall|scrum]"
 }
