@@ -236,15 +236,9 @@ func UpdateProject(c *gin.Context) {
 		return
 	}
 
-	log.Println(project_id)
-
 	_, err = database.Client.
 		Doc("projects/"+project_id).
 		Update(context.Background(), []firestore.Update{
-			{
-				Path:  "name",
-				Value: req.Name,
-			},
 			{
 				Path:  "devTools",
 				Value: req.DevTools,
