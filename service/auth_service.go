@@ -28,7 +28,7 @@ func UserRegister(c *gin.Context) {
 		// user := res.Result()
 		scaf_user := map[string]interface{}{
 			"email":    req.Email,
-			"avator":   "",
+			"avatar":   "",
 			"bio":      "",
 			"nickname": "",
 			"projects": []string{},
