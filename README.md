@@ -147,7 +147,6 @@ project name 不應包含 `# \ ? % * : | " < >` 。
 
 ```json
 {
-    "name": "[project name]",
     "devTools": [],
     "devMode": "[waterfall|scrum]"
 }

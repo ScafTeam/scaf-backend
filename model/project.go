@@ -25,6 +25,11 @@ type CreateProjectRequest struct {
 	DevMode  string   `json:"devMode" binding:"required,eq=waterfall|eq=scrum"` // waterfall, scrum
 }
 
+type UpdateProjectRequest struct {
+	DevTools []string `json:"devTools"`
+	DevMode  string   `json:"devMode" binding:"required,eq=waterfall|eq=scrum"` // waterfall, scrum
+}
+
 type AddMemberRequest struct {
 	Email string `json:"email" binding:"email"`
 }
