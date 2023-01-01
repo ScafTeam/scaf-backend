@@ -14,6 +14,12 @@ Web API Key: 專案設定內查看<br>
 firbase project id: 專案設定內查看<br>
 serviceAccount.json: https://sharma-vikashkr.medium.com/firebase-how-to-setup-a-firebase-service-account--6a70bb6646
 
+### HotReload
+
+```bash
+gin -p 8081 -a 8000 run .
+```
+
 ### **database/config.txt**
 
 ```
@@ -116,8 +122,7 @@ list user's project
 ```GET /user/{user_email}/project/```
 
 ### Get Project
-
-```Required JWT```  
+ 
 ```GET /user/{user_email}/project/{project_name}/```
 
 ### Create Project
@@ -317,12 +322,12 @@ list user's project
 ### Get Document
 
 ```Required JWT```  
-```GET /user/{user_email}/project/{project_name}/doc/```
+```GET /user/{user_email}/project/{project_name}/docs/```
 
 ### Add Document
 
 ```Required JWT```  
-```POST /user/{user_email}/project/{project_name}/doc/```
+```POST /user/{user_email}/project/{project_name}/docs/```
 
 ```json
 {
@@ -334,7 +339,7 @@ list user's project
 ### Update Document
 
 ```Required JWT```  
-```PUT /user/{user_email}/project/{project_name}/doc/```
+```PUT /user/{user_email}/project/{project_name}/docs/```
 
 ```json
 {
@@ -347,7 +352,7 @@ list user's project
 ### Delete Document
 
 ```Required JWT```  
-```DELETE /user/{user_email}/project/{project_name}/doc/```
+```DELETE /user/{user_email}/project/{project_name}/docs/```
 
 ```json
 {
