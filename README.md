@@ -138,6 +138,8 @@ list user's project
 }
 ```
 
+project name 不應包含 `# \ ? % * : | " < >` 。
+
 ### Update Project
 
 ```Required JWT```  
