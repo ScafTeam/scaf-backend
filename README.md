@@ -116,8 +116,7 @@ list user's project
 ```GET /user/{user_email}/project/```
 
 ### Get Project
-
-```Required JWT```  
+ 
 ```GET /user/{user_email}/project/{project_name}/```
 
 ### Create Project
@@ -317,12 +316,12 @@ list user's project
 ### Get Document
 
 ```Required JWT```  
-```GET /user/{user_email}/project/{project_name}/doc/```
+```GET /user/{user_email}/project/{project_name}/docs/```
 
 ### Add Document
 
 ```Required JWT```  
-```POST /user/{user_email}/project/{project_name}/doc/```
+```POST /user/{user_email}/project/{project_name}/docs/```
 
 ```json
 {
@@ -334,7 +333,7 @@ list user's project
 ### Update Document
 
 ```Required JWT```  
-```PUT /user/{user_email}/project/{project_name}/doc/```
+```PUT /user/{user_email}/project/{project_name}/docs/```
 
 ```json
 {
@@ -347,7 +346,7 @@ list user's project
 ### Delete Document
 
 ```Required JWT```  
-```DELETE /user/{user_email}/project/{project_name}/doc/```
+```DELETE /user/{user_email}/project/{project_name}/docs/```
 
 ```json
 {
