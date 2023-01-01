@@ -22,7 +22,7 @@ type Repo struct {
 type CreateProjectRequest struct {
 	Name     string   `json:"name" binding:"required"`
 	DevTools []string `json:"devTools"`
-	DevMode  string   `json:"devMode" binding:"required"`
+	DevMode  string   `json:"devMode" binding:"required,eq=waterfall|eq=scrum"` // waterfall, scrum
 }
 
 type AddMemberRequest struct {
