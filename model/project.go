@@ -50,5 +50,5 @@ type DeleteRepoRequest struct {
 
 func CheckProjectName(name string) bool {
 	// check project name without invalid characters
-	return !strings.ContainsAny(name, "/\\?%*:|\"<>")
+	return !strings.ContainsAny(name, "/#\\?%*:|\"<>")
 }
