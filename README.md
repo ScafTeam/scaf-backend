@@ -262,7 +262,6 @@ project name 不應包含 `# \ ? % * : | " < >` 。
 ```json
 {
     "id": "[task ID]",
-    "workflowId": "[workflow ID]",
     "name": "[task name]",
     "description": "[task description]"
 }
@@ -276,7 +275,6 @@ project name 不應包含 `# \ ? % * : | " < >` 。
 ```json
 {
     "id": "[task ID]",
-    "workflowId": "[workflow ID]",
     "newWorkflowId": "[new workflow ID]"
 }
 ```
@@ -289,7 +287,6 @@ project name 不應包含 `# \ ? % * : | " < >` 。
 ```json
 {
     "id": "[task ID]",
-    "workflowId": "[workflow ID]"
 }
 ```
 
