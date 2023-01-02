@@ -133,18 +133,7 @@ func CreateProject(c *gin.Context) {
 		return
 	}
 
-	_, err = database.Client.
-		Doc("kanbans/"+project_uuid).
-		Set(context.Background(), createKanban(c, project_uuid))
-
-	if err != nil {
-		log.Printf("An error has occurred: %s", err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status":  "Internal Server Error",
-			"message": err.Error(),
-		})
-		return
-	}
+	setKanbanToFirestore(c, project_uuid)
 
 	_, err = database.Client.
 		Doc("docs/"+project_uuid).
