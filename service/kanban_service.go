@@ -305,14 +305,13 @@ func UpdateTask(c *gin.Context) {
 		return
 	}
 
+	updateData := processUpdateData(req)
+
 	_, err := database.Client.
 		Doc("kanbans/"+project_id).
 		Collection("tasks").
 		Doc(req.Id).
-		Set(context.Background(), map[string]interface{}{
-			"name":        req.Name,
-			"description": req.Description,
-		}, firestore.MergeAll)
+		Update(context.Background(), updateData)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{

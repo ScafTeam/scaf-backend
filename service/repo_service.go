@@ -74,8 +74,12 @@ func UpdateRepo(c *gin.Context) {
 	for i, repo := range repos {
 		if repo.Id == req.Id {
 			hasRepo = true
-			repos[i].Name = req.Name
-			repos[i].Url = req.Url
+			if req.Name != "" {
+				repos[i].Name = req.Name
+			}
+			if req.Url != "" {
+				repos[i].Url = req.Url
+			}
 		}
 	}
 

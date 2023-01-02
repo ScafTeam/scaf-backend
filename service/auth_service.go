@@ -93,22 +93,12 @@ func UpdateUserData(c *gin.Context) {
 
 	email := c.Param("user_email")
 
+	// if field is empty, don't update
+	updateData := processUpdateData(req)
+
 	_, err := database.Client.
 		Doc("users/"+email).
-		Update(context.Background(), []firestore.Update{
-			{
-				Path:  "avatar",
-				Value: req.Avatar,
-			},
-			{
-				Path:  "nickname",
-				Value: req.Nickname,
-			},
-			{
-				Path:  "bio",
-				Value: req.Bio,
-			},
-		})
+		Update(context.Background(), updateData)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{

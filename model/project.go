@@ -27,7 +27,7 @@ type CreateProjectRequest struct {
 
 type UpdateProjectRequest struct {
 	DevTools []string `json:"devTools"`
-	DevMode  string   `json:"devMode" binding:"required,eq=waterfall|eq=scrum"` // waterfall, scrum
+	DevMode  string   `json:"devMode" binding:"eq=waterfall|eq=scrum"` // waterfall, scrum
 }
 
 type AddMemberRequest struct {
@@ -45,8 +45,8 @@ type AddRepoRequest struct {
 
 type UpdateRepoRequest struct {
 	Id   string `json:"id" binding:"required"`
-	Name string `json:"name" binding:"required"`
-	Url  string `json:"url" binding:"required"`
+	Name string `json:"name"`
+	Url  string `json:"url"`
 }
 
 type DeleteRepoRequest struct {

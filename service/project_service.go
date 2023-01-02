@@ -225,18 +225,11 @@ func UpdateProject(c *gin.Context) {
 		return
 	}
 
+	updateData := processUpdateData(req)
+
 	_, err = database.Client.
 		Doc("projects/"+project_id).
-		Update(context.Background(), []firestore.Update{
-			{
-				Path:  "devTools",
-				Value: req.DevTools,
-			},
-			{
-				Path:  "devMode",
-				Value: req.DevMode,
-			},
-		})
+		Update(context.Background(), updateData)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
