@@ -2,8 +2,10 @@ package service
 
 import (
 	"backend/database"
+	"strings"
 
 	"net/http"
+	"reflect"
 
 	"cloud.google.com/go/firestore"
 	"github.com/gin-gonic/gin"
@@ -40,4 +42,25 @@ func getProjectId(c *gin.Context) string {
 	res := getProjectDetail(c)
 
 	return res.Ref.ID
+}
+
+func processUpdateData(req interface{}) []firestore.Update {
+	update_data := []firestore.Update{}
+
+	req_type := reflect.TypeOf(req)
+	req_value := reflect.ValueOf(req)
+
+	for i := 0; i < req_type.NumField(); i++ {
+		field := req_type.Field(i)
+		value := req_value.Field(i)
+
+		if value.String() != "" {
+			update_data = append(update_data, firestore.Update{
+				Path:  strings.ToLower(field.Name[:1]) + field.Name[1:],
+				Value: value.String(),
+			})
+		}
+	}
+
+	return update_data
 }
