@@ -102,6 +102,8 @@ func ListAllKanbans(c *gin.Context) {
 		var workflow model.Workflow
 		workflow.Id = doc.Ref.ID
 		workflow.Name = doc.Data()["name"].(string)
+
+		kanban.Workflows = append(kanban.Workflows, workflow)
 	}
 
 	iter = database.Client.
@@ -339,7 +341,7 @@ func MoveTask(c *gin.Context) {
 	}
 
 	// check new_workflow_Id in firebase kanbans
-	new_workflow, ok := findWorkFlowById(c, project_id, req.NewWorkflowId)
+	_, ok := findWorkFlowById(c, project_id, req.NewWorkflowId)
 
 	if !ok {
 		return
@@ -350,7 +352,7 @@ func MoveTask(c *gin.Context) {
 		Collection("tasks").
 		Doc(req.Id).
 		Set(context.Background(), map[string]interface{}{
-			"workflowId": new_workflow.Id,
+			"workflowId": req.NewWorkflowId,
 		}, firestore.MergeAll)
 
 	if err != nil {

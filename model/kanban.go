@@ -48,6 +48,5 @@ type MoveTaskRequest struct {
 }
 
 type DeleteTaskRequest struct {
-	Id         string `json:"id" binding:"required"`
-	WorkflowId string `json:"workflowId" binding:"required"`
+	Id string `json:"id" binding:"required"`
 }
