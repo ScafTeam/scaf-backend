@@ -1,8 +1,8 @@
 package model
 
 type Kanban struct {
-	ProjectId string              `json:"projectId"`
-	Workflows map[string]Workflow `json:"workflows"`
+	ProjectId string     `json:"projectId"`
+	Workflows []Workflow `json:"workflows"`
 }
 
 type Workflow struct {
@@ -18,7 +18,7 @@ type Task struct {
 }
 
 type AddWorkFlowRequest struct {
-	WorkflowName string `json:"name" binding:"required"`
+	Name string `json:"name" binding:"required"`
 }
 
 type UpdateWorkFlowRequest struct {
@@ -37,19 +37,16 @@ type AddTaskRequest struct {
 }
 
 type UpdateTaskRequest struct {
-	TaskId      string `json:"id" binding:"required"`
-	WorkflowId  string `json:"workflowId" binding:"required"`
+	Id          string `json:"id" binding:"required"`
 	Name        string `json:"name" binding:"required"`
 	Description string `json:"description"`
 }
 
 type MoveTaskRequest struct {
-	TaskId        string `json:"id" binding:"required"`
-	WorkflowId    string `json:"workflowId" binding:"required"`
+	Id            string `json:"id" binding:"required"`
 	NewWorkflowId string `json:"newWorkflowId" binding:"required"`
 }
 
 type DeleteTaskRequest struct {
-	TaskId     string `json:"id" binding:"required"`
-	WorkflowId string `json:"workflowId" binding:"required"`
+	Id string `json:"id" binding:"required"`
 }

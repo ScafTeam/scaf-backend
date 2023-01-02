@@ -9,38 +9,68 @@ import (
 	"cloud.google.com/go/firestore"
 	"github.com/gin-gonic/gin"
 	"github.com/lithammer/shortuuid"
+	"google.golang.org/api/iterator"
 )
 
-func createKanban(c *gin.Context, project_id string) map[string]interface{} {
-	workflows := make(map[string]model.Workflow)
-
+func createKanban(c *gin.Context) []map[string]interface{} {
 	todo_id := shortuuid.New()
-	workflows[todo_id] = model.Workflow{
-		Id:    todo_id,
-		Name:  "Todo",
-		Tasks: []model.Task{},
-	}
-
 	inProgress_id := shortuuid.New()
-	workflows[inProgress_id] = model.Workflow{
-		Id:    inProgress_id,
-		Name:  "In Progress",
-		Tasks: []model.Task{},
-	}
-
 	done_id := shortuuid.New()
-	workflows[done_id] = model.Workflow{
-		Id:    done_id,
-		Name:  "Done",
-		Tasks: []model.Task{},
+
+	todo := map[string]interface{}{
+		"id":   todo_id,
+		"name": "To Do",
 	}
 
-	kanban := map[string]interface{}{
-		"projectId": project_id,
-		"workflows": workflows,
+	inProgress := map[string]interface{}{
+		"id":   inProgress_id,
+		"name": "In Progress",
 	}
 
-	return kanban
+	done := map[string]interface{}{
+		"id":   done_id,
+		"name": "Done",
+	}
+
+	return []map[string]interface{}{todo, inProgress, done}
+}
+
+func setKanbanToFirestore(c *gin.Context, project_id string) bool {
+	_, err := database.Client.
+		Doc("kanbans/"+project_id).
+		Set(context.Background(), map[string]interface{}{
+			"projectId": project_id,
+		})
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status":  "Internal Server Error",
+			"message": err.Error(),
+		})
+		return false
+	}
+
+	workflows := createKanban(c)
+
+	for _, workflow := range workflows {
+		_, err := database.Client.
+			Doc("kanbans/"+project_id).
+			Collection("workflows").
+			Doc(workflow["id"].(string)).
+			Set(context.Background(), map[string]interface{}{
+				"name": workflow["name"],
+			})
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"status":  "Internal Server Error",
+				"message": err.Error(),
+			})
+			return false
+		}
+	}
+
+	return true
 }
 
 func ListAllKanbans(c *gin.Context) {
@@ -48,20 +78,64 @@ func ListAllKanbans(c *gin.Context) {
 
 	project_id := res.Ref.ID
 
-	dsnap, err := database.Client.
-		Doc("kanbans/" + project_id).
-		Get(context.Background())
+	var kanban model.Kanban
+	kanban.ProjectId = project_id
 
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status":  "Internal Server Error",
-			"message": err.Error(),
-		})
-		return
+	iter := database.Client.
+		Doc("kanbans/" + project_id).
+		Collection("workflows").
+		Documents(context.Background())
+
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"status":  "Internal Server Error",
+				"message": err.Error(),
+			})
+			return
+		}
+
+		var workflow model.Workflow
+		workflow.Id = doc.Ref.ID
+		workflow.Name = doc.Data()["name"].(string)
+
+		kanban.Workflows = append(kanban.Workflows, workflow)
 	}
 
-	var kanban model.Kanban
-	dsnap.DataTo(&kanban)
+	iter = database.Client.
+		Doc("kanbans/" + project_id).
+		Collection("tasks").
+		Documents(context.Background())
+
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"status":  "Internal Server Error",
+				"message": err.Error(),
+			})
+			return
+		}
+
+		var task model.Task
+		doc.DataTo(&task)
+		task.Id = doc.Ref.ID
+		workflowId := doc.Data()["workflowId"].(string)
+
+		for i, workflow := range kanban.Workflows {
+			if workflow.Id == workflowId {
+				kanban.Workflows[i].Tasks = append(kanban.Workflows[i].Tasks, task)
+			}
+		}
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"status":  "OK",
@@ -83,20 +157,15 @@ func AddWorkFlow(c *gin.Context) {
 	}
 
 	new_workflow_id := shortuuid.New()
-	workflow := model.Workflow{
-		Id:    new_workflow_id,
-		Name:  req.WorkflowName,
-		Tasks: []model.Task{},
+	workflow := map[string]interface{}{
+		"name": req.Name,
 	}
 
 	_, err := database.Client.
 		Doc("kanbans/"+project_id).
-		Update(context.Background(), []firestore.Update{
-			{
-				Path:  "workflows." + new_workflow_id,
-				Value: workflow,
-			},
-		})
+		Collection("workflows").
+		Doc(new_workflow_id).
+		Set(context.Background(), workflow)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -109,7 +178,7 @@ func AddWorkFlow(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{
 		"id":      new_workflow_id,
 		"status":  "Created",
-		"message": "Add workflow " + req.WorkflowName + " success",
+		"message": "Add workflow " + req.Name + " success",
 	})
 }
 
@@ -124,22 +193,14 @@ func UpdateWorkFlow(c *gin.Context) {
 	}
 
 	project_id := getProjectId(c)
-	workflow, ok := findWorkFlowById(c, project_id, req.Id)
-
-	if !ok {
-		return
-	}
-
-	workflow.Name = req.Name
 
 	_, err := database.Client.
 		Doc("kanbans/"+project_id).
-		Update(context.Background(), []firestore.Update{
-			{
-				Path:  "workflows." + req.Id,
-				Value: workflow,
-			},
-		})
+		Collection("workflows").
+		Doc(req.Id).
+		Set(context.Background(), map[string]interface{}{
+			"name": req.Name,
+		}, firestore.MergeAll)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -151,7 +212,7 @@ func UpdateWorkFlow(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"status":  "OK",
-		"message": "Update " + workflow.Name + " Success",
+		"message": "Update " + req.Name + " Success",
 	})
 }
 
@@ -166,20 +227,11 @@ func DeleteWorkFlow(c *gin.Context) {
 	}
 
 	project_id := getProjectId(c)
-	workflow, ok := findWorkFlowById(c, project_id, req.Id)
-
-	if !ok {
-		return
-	}
 
 	_, err := database.Client.
-		Doc("kanbans/"+project_id).
-		Update(context.Background(), []firestore.Update{
-			{
-				Path:  "workflows." + req.Id,
-				Value: firestore.Delete,
-			},
-		})
+		Doc("kanbans/" + project_id).
+		Collection("workflows").
+		Doc(req.Id).Delete(context.Background())
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -191,7 +243,7 @@ func DeleteWorkFlow(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"status":  "OK",
-		"message": "Delete " + workflow.Name + " Success",
+		"message": "Delete " + req.Id + " Success",
 	})
 }
 
@@ -209,28 +261,23 @@ func AddTask(c *gin.Context) {
 	}
 
 	// check workflow_Id in firebase kanbans
-	workflow, ok := findWorkFlowById(c, project_id, req.WorkflowId)
+	_, ok := findWorkFlowById(c, project_id, req.WorkflowId)
 
 	if !ok {
 		return
 	}
 
-	task := model.Task{
-		Id:          task_id,
-		Name:        req.Name,
-		Description: req.Description,
+	task := map[string]interface{}{
+		"name":        req.Name,
+		"description": req.Description,
+		"workflowId":  req.WorkflowId,
 	}
-
-	workflow.Tasks = append(workflow.Tasks, task)
 
 	_, err := database.Client.
 		Doc("kanbans/"+project_id).
-		Update(context.Background(), []firestore.Update{
-			{
-				Path:  "workflows." + req.WorkflowId,
-				Value: workflow,
-			},
-		})
+		Collection("tasks").
+		Doc(task_id).
+		Set(context.Background(), task)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -242,7 +289,7 @@ func AddTask(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, gin.H{
 		"status":  "Created",
-		"message": "Add " + workflow.Name + " Task Success",
+		"message": "Add " + req.Name + " Task Success",
 	})
 }
 
@@ -258,42 +305,14 @@ func UpdateTask(c *gin.Context) {
 		return
 	}
 
-	// check workflow_Id in firebase kanbans
-	workflow, ok := findWorkFlowById(c, project_id, req.WorkflowId)
-
-	if !ok {
-		return
-	}
-
-	var hasTask bool
-	var new_tasks []model.Task
-	for _, t := range workflow.Tasks {
-		if t.Id == req.TaskId {
-			hasTask = true
-			t.Name = req.Name
-			t.Description = req.Description
-		}
-		new_tasks = append(new_tasks, t)
-	}
-
-	if !hasTask {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status":  "Bad Request",
-			"message": "Task not found",
-		})
-		return
-	}
-
-	workflow.Tasks = new_tasks
-
 	_, err := database.Client.
 		Doc("kanbans/"+project_id).
-		Update(context.Background(), []firestore.Update{
-			{
-				Path:  "workflows." + req.WorkflowId,
-				Value: workflow,
-			},
-		})
+		Collection("tasks").
+		Doc(req.Id).
+		Set(context.Background(), map[string]interface{}{
+			"name":        req.Name,
+			"description": req.Description,
+		}, firestore.MergeAll)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -305,7 +324,7 @@ func UpdateTask(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, gin.H{
 		"status":  "Created",
-		"message": "Update " + workflow.Name + " Task Success",
+		"message": "Update " + req.Name + " Task Success",
 	})
 }
 
@@ -321,56 +340,20 @@ func MoveTask(c *gin.Context) {
 		return
 	}
 
-	// check workflow_Id in firebase kanbans
-	workflow, ok := findWorkFlowById(c, project_id, req.WorkflowId)
-
-	if !ok {
-		return
-	}
-
-	var task *model.Task
-	var new_tasks []model.Task
-	for _, t := range workflow.Tasks {
-		if t.Id == req.TaskId {
-			task = &t
-		} else {
-			new_tasks = append(new_tasks, t)
-		}
-	}
-
-	if task == nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status":  "Bad Request",
-			"message": "Task not found",
-		})
-		return
-	}
-
 	// check new_workflow_Id in firebase kanbans
-	new_workflow, ok := findWorkFlowById(c, project_id, req.WorkflowId)
+	_, ok := findWorkFlowById(c, project_id, req.NewWorkflowId)
 
 	if !ok {
 		return
 	}
-
-	new_workflow.Tasks = append(new_workflow.Tasks, *task)
 
 	_, err := database.Client.
 		Doc("kanbans/"+project_id).
-		Update(context.Background(), []firestore.Update{
-			{
-				Path: "workflows." + req.WorkflowId,
-				Value: model.Workflow{
-					Id:    workflow.Id,
-					Name:  workflow.Name,
-					Tasks: new_tasks,
-				},
-			},
-			{
-				Path:  "workflows." + req.NewWorkflowId,
-				Value: new_workflow,
-			},
-		})
+		Collection("tasks").
+		Doc(req.Id).
+		Set(context.Background(), map[string]interface{}{
+			"workflowId": req.NewWorkflowId,
+		}, firestore.MergeAll)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -399,41 +382,11 @@ func DeleteTask(c *gin.Context) {
 		return
 	}
 
-	// check workflow_name in firebase kanbans
-	workflow, ok := findWorkFlowById(c, project_id, req.WorkflowId)
-
-	if !ok {
-		return
-	}
-
-	var delete_task *model.Task
-	var new_tasks []model.Task
-	for _, task := range workflow.Tasks {
-		if task.Id != req.TaskId {
-			new_tasks = append(new_tasks, task)
-		} else {
-			delete_task = &task
-		}
-	}
-
-	if delete_task == nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"status":  "Not Found",
-			"message": "Task not found",
-		})
-		return
-	}
-
-	workflow.Tasks = new_tasks
-
 	_, err := database.Client.
-		Doc("kanbans/"+project_id).
-		Update(context.Background(), []firestore.Update{
-			{
-				Path:  "workflows." + req.WorkflowId,
-				Value: workflow,
-			},
-		})
+		Doc("kanbans/" + project_id).
+		Collection("tasks").
+		Doc(req.Id).
+		Delete(context.Background())
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -452,6 +405,8 @@ func DeleteTask(c *gin.Context) {
 func findWorkFlowById(c *gin.Context, project_id, workflow_Id string) (model.Workflow, bool) {
 	dsnap, err := database.Client.
 		Doc("kanbans/" + project_id).
+		Collection("workflows").
+		Doc(workflow_Id).
 		Get(context.Background())
 
 	if err != nil {
@@ -459,22 +414,11 @@ func findWorkFlowById(c *gin.Context, project_id, workflow_Id string) (model.Wor
 			"status":  "Internal Server Error",
 			"message": err.Error(),
 		})
-		c.Abort()
 		return model.Workflow{}, false
 	}
 
-	var kanban model.Kanban
-	dsnap.DataTo(&kanban)
+	var workflow model.Workflow
+	dsnap.DataTo(&workflow)
 
-	workflow := kanban.Workflows[workflow_Id]
-
-	if workflow.Id == "" {
-		c.JSON(http.StatusNotFound, gin.H{
-			"status":  "Not Found",
-			"message": "Workflow not found",
-		})
-		c.Abort()
-		return model.Workflow{}, false
-	}
 	return workflow, true
 }
