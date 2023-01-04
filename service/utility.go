@@ -64,3 +64,19 @@ func processUpdateData(req interface{}) []firestore.Update {
 
 	return update_data
 }
+
+func _processData(data interface{}) map[string]interface{} {
+	data_type := reflect.TypeOf(data)
+	data_value := reflect.ValueOf(data)
+
+	res := map[string]interface{}{}
+
+	for i := 0; i < data_type.NumField(); i++ {
+		field := data_type.Field(i)
+		value := data_value.Field(i)
+
+		res[strings.ToLower(field.Name[:1])+field.Name[1:]] = value.String()
+	}
+
+	return res
+}

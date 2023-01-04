@@ -135,6 +135,7 @@ func DeleteRepo(c *gin.Context) {
 		if repo.Id == req.Id {
 			hasRepo = true
 			repos = append(repos[:i], repos[i+1:]...)
+			break
 		}
 	}
 
@@ -151,7 +152,7 @@ func DeleteRepo(c *gin.Context) {
 		Update(context.Background(), []firestore.Update{
 			{
 				Path:  "repos",
-				Value: repos,
+				Value: processFirestoreData(repos),
 			},
 		})
 
@@ -178,4 +179,14 @@ func ListAllRepos(c *gin.Context) {
 		"message": "List all repos",
 		"repos":   repos,
 	})
+}
+
+func processFirestoreData(data []model.Repo) []map[string]interface{} {
+	res := []map[string]interface{}{}
+
+	for _, v := range data {
+		res = append(res, _processData(v))
+	}
+
+	return res
 }
