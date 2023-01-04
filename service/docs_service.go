@@ -40,10 +40,18 @@ func ListAllDocs(c *gin.Context) {
 	var docs model.Docs
 	dsnap.DataTo(&docs)
 
+	var docsList []model.Doc
+	for _, doc := range docs.Docs {
+		docsList = append(docsList, doc)
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"status":  "OK",
 		"message": "Get all docs successfully",
-		"docs":    docs,
+		"docs": map[string]interface{}{
+			"ProjecId": docs.ProjectId,
+			"docs":     docsList,
+		},
 	})
 }
 
