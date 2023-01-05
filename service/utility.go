@@ -54,7 +54,8 @@ func processUpdateData(req interface{}) []firestore.Update {
 		field := req_type.Field(i)
 		value := req_value.Field(i)
 
-		if value.String() != "" {
+		// Check if value is empty, [] is empty
+		if !value.IsZero() {
 			update_data = append(update_data, firestore.Update{
 				Path:  strings.ToLower(field.Name[:1]) + field.Name[1:],
 				Value: value.String(),

@@ -96,7 +96,7 @@ func UpdateRepo(c *gin.Context) {
 		Update(context.Background(), []firestore.Update{
 			{
 				Path:  "repos",
-				Value: repos,
+				Value: processFirestoreData(repos),
 			},
 		})
 
